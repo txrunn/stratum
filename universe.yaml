@@ -1,0 +1,56 @@
+# Machine-readable universe. UNIVERSE.md carries the rationale.
+# Flags are consumed by the pipeline; see "Flags to carry through" in UNIVERSE.md.
+
+benchmarks:
+  market: SPY          # base specification
+  robustness: [QQQ, SMH, XLU]
+
+groups:
+
+  core_ai:
+    description: Accelerated compute and its supply chain. Dense competitor graph.
+    members:
+      - {symbol: NVDA, role: anchor,     fiscal_offset: true}
+      - {symbol: AMD,  role: competitor, competitor_rank: 1}
+      - {symbol: INTC, role: competitor, competitor_rank: 2}
+      - {symbol: AVGO, role: competitor, competitor_rank: 3, off_cycle: true}
+      - {symbol: QCOM, role: competitor, competitor_rank: 5}
+      - {symbol: ARM,  role: competitor, competitor_rank: 6, adr: true, recent_ipo: 2023}
+      - {symbol: MU,   role: supply_chain, off_cycle: true}
+      - {symbol: TSM,  role: supply_chain, adr: true, bellwether: 1}
+      - {symbol: MRVL, role: supply_chain}
+      - {symbol: AMAT, role: supply_chain, lagged: true}
+
+  hyperscalers:
+    description: Demand side. Capex guidance is a directional signal into core_ai.
+    members:
+      - {symbol: MSFT,  role: customer}
+      - {symbol: GOOGL, role: customer_and_competitor, competitor_rank: 4}
+      - {symbol: AMZN,  role: customer}
+      - {symbol: META,  role: customer}
+      - {symbol: ORCL,  role: customer, off_cycle: true}
+
+  power_physical:
+    description: Cross-sector test. Theme graph links these to AI infra; GICS does not.
+    members:
+      - {symbol: VRT, gics: Industrials}
+      - {symbol: ETN, gics: Industrials}
+      - {symbol: GEV, gics: Industrials, recent_ipo: 2024}
+      - {symbol: CEG, gics: Utilities}
+      - {symbol: PWR, gics: Industrials}
+
+  control:
+    description: Low expected semantic connection. Exists to be unsurprising.
+    members:
+      - {symbol: KO,  factor: staples}
+      - {symbol: PG,  factor: staples}
+      - {symbol: JNJ, factor: healthcare}
+      - {symbol: WM,  factor: domestic_industrial}
+      - {symbol: JPM, factor: financials}
+      - {symbol: XOM, factor: energy}
+
+# Bellwether chain for the information-transfer study, earliest reporter first.
+bellwether_chain: [TSM, MU, NVDA, AVGO]
+
+# Excluded from pooled inference until the noted issue is resolved.
+descriptive_only: [TSM, ARM]   # ADR / FX contamination

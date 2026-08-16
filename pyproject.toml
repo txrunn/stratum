@@ -1,0 +1,27 @@
+[project]
+name = "stratum"
+version = "0.0.1"
+description = "Semantic layer over quantitative market data — event studies and peer-graph validation"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "statsmodels>=0.14",   # market model, cross-sectional tests
+    "scipy>=1.13",
+    "pyyaml>=6.0",         # study configs and universe.yaml
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

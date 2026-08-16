@@ -1,0 +1,22 @@
+# All fetched and derived data. Position data must never be committed.
+data/
+
+# Runtime secrets — account numbers are supplied at runtime, not stored.
+.env
+*.local.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
