@@ -1,0 +1,55 @@
+# Non-equity-cluster universe: macro-release event-study targets.
+# Rationale lives in UNIVERSE.md ("Non-equity universes for heterodox studies").
+#
+# These instruments are the *response* variables for macro-release event studies
+# (#1 consensus fade, #2 class-weighted sentiment, and any future macro study).
+# They are not part of the core AI/hyperscaler/power/control bench and do not
+# enter Studies A/B.
+
+benchmarks:
+  market: SPY          # same base factor as universe.yaml — do not diverge
+
+groups:
+
+  broad_equity:
+    description: Broad-market response to macro releases. SPY is the base spec, QQQ is a growth/duration robustness check.
+    members:
+      - {symbol: SPY, role: market_response}
+      - {symbol: QQQ, role: market_response_growth_tilt}
+
+  rates:
+    description: Duration-sensitive Treasuries. Primary response instruments for FOMC and rate-print event studies.
+    members:
+      - {symbol: TLT, role: long_duration}       # 20+yr Treasuries
+      - {symbol: IEF, role: intermediate}        # 7-10yr — less duration
+      - {symbol: SHY, role: short_duration}      # 1-3yr — front-end anchor
+
+  inflation:
+    description: TIP is the direct read on inflation surprises around CPI/PCE releases.
+    members:
+      - {symbol: TIP, role: inflation_linked}
+
+  dollar:
+    description: DXY proxy for FX/rate-differential response.
+    members:
+      - {symbol: UUP, role: dollar_bullish}      # Invesco DB US$ Bullish
+
+  real_assets:
+    description: Gold as the classical inflation/rate/dollar-hedge triangulation.
+    members:
+      - {symbol: GLD, role: real_asset_response}
+
+# Event classes that consume this universe:
+#
+#   fomc_response       →  broad_equity + rates + dollar
+#   cpi_response        →  rates + inflation + real_assets
+#   nfp_response        →  broad_equity + rates
+#   pce_response        →  rates + inflation
+#   gdp_response        →  broad_equity + dollar
+#
+# The mapping is enforced per-study in studies/*.yaml, not here — this file only
+# declares the universe. See consensus_fade_fomc.yaml for the pattern.
+
+# All members share the SPY market factor already used by the core universe.
+# No descriptive_only flags: these are all US equities/ETFs and the existing
+# market-model machinery handles them.

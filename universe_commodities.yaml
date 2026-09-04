@@ -1,0 +1,71 @@
+# Non-equity-cluster universe: commodities, resource countries, extraction
+# frontiers, and semi-periphery manufacturing beneficiaries.
+# Rationale lives in UNIVERSE.md ("Non-equity universes for heterodox studies").
+#
+# CRITICAL: every member here is `descriptive_only: true` until a commodity
+# factor model (candidate: DBC / GSG / DBA) and an EM equity factor model
+# (candidate: EEM) exist in quant/market_model.py. The SPY factor is wrong
+# for these instruments and pooled inference would be worse than none.
+# See ARCHITECTURE.md "Open questions" for the factor-model decision.
+
+# No `benchmarks:` block — pooled inference is off. Studies touching this
+# universe compare returns to a peer basket (e.g., DBC for commodities,
+# EEM for EM equities) as reported context, not as a fitted market model.
+
+groups:
+
+  commodity_futures:
+    description: Front-month continuous contracts. Roll methodology is stored per-observation in bars. Used by #7A sanctions/chokepoint studies.
+    descriptive_only: true
+    members:
+      - {symbol: CL,   role: crude_wti,     asset_class: commodity_future}
+      - {symbol: BZ,   role: crude_brent,   asset_class: commodity_future}   # Brent for European/Asian exposure
+      - {symbol: NG,   role: natural_gas,   asset_class: commodity_future}
+      - {symbol: HG,   role: copper,        asset_class: commodity_future}   # industrial-cycle bellwether
+      - {symbol: GC,   role: gold,          asset_class: commodity_future}
+      - {symbol: SI,   role: silver,        asset_class: commodity_future}
+
+  resource_country_etfs:
+    description: Country ETFs with heavy commodity revenue exposure. Used as descriptive returns targets for sanctions/chokepoint studies where a single-country reaction is the question.
+    descriptive_only: true
+    members:
+      - {symbol: EWZ,  role: brazil,        commodity_exposure: [iron, ag, oil]}
+      - {symbol: EIDO, role: indonesia,     commodity_exposure: [coal, palm, nickel]}
+      - {symbol: KSA,  role: saudi_arabia,  commodity_exposure: [oil]}
+
+  frontier_resources:
+    description: Single-name extraction plays on new frontiers (Luxemburg's primitive-accumulation lens, #7B2). Structural multi-year theses, not cyclical trades.
+    descriptive_only: true
+    members:
+      - {symbol: EGY,  role: guyana_oil,        thesis: frontier_extraction}
+      - {symbol: LAAC, role: lithium_lat_am,    thesis: frontier_extraction}
+      - {symbol: MP,   role: rare_earths_us,    thesis: frontier_extraction}   # supply-security angle overlaps
+      - {symbol: PLL,  role: lithium_us,        thesis: frontier_extraction}
+      - {symbol: LTHM, role: lithium_diversified, thesis: frontier_extraction}
+
+  semi_periphery_manufacturing:
+    description: World-systems / Arrighi lens (#7B3) — semi-periphery states capturing manufacturing shift. Multi-year residual-returns study conditioned on reshoring_index level.
+    descriptive_only: true
+    members:
+      - {symbol: EWW,  role: mexico_nearshoring, thesis: semi_periphery_beneficiary}
+      - {symbol: VNM,  role: vietnam,            thesis: semi_periphery_beneficiary}
+      - {symbol: EPOL, role: poland,             thesis: semi_periphery_beneficiary}
+      - {symbol: INDA, role: india,              thesis: semi_periphery_beneficiary}
+
+# Peer baskets for descriptive comparisons (not fitted as market factors).
+# Studies reference these explicitly under `peer_basket:` in their config.
+peer_baskets:
+  commodity_broad: DBC          # Invesco DB Commodity — broad, oil-heavy
+  commodity_ag: DBA             # broad ag
+  em_equity: EEM                # MSCI EM
+  em_equity_ex_china: EMXC      # avoids China-macro dominance
+
+# Flags to carry through the pipeline:
+#
+# `descriptive_only: true`  — group-level. Overrides per-member. Turns off
+#                             pooled event-study inference; results appear
+#                             as descriptive tables only.
+# `thesis: <name>`          — attaches a semantic label class (see #7B in
+#                             HETERODOX_STRATEGIES.md).
+# `asset_class:`            — distinguishes futures from ETFs for bars/roll
+#                             handling in store/loaders.
