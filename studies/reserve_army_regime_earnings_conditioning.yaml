@@ -1,0 +1,35 @@
+# #3 Reserve-army-of-labor regime conditioning on Study A pooled earnings SCAR.
+# Rationale: HETERODOX_STRATEGIES.md § "#3 Reserve army of labor".
+#
+# Hypothesis: mean post-earnings SCAR differs by reserve-army regime because
+# margin/labor-cost sensitivity is regime-dependent. In `thin_reserve` regimes
+# capital's wage-bargaining power weakens → margin compression is under-priced
+# by consensus estimates → beats are smaller-in-magnitude, misses larger.
+
+name: reserve_army_regime_earnings_conditioning
+universe: universe.core_ai + universe.hyperscalers
+benchmark: SPY
+
+window: {pre: -1, post: 5}
+estimation: {start: -250, end: -30}
+
+# Reserve-army composite is derived from FRED/ALFRED macro_series; pinned version.
+conditioning_variables:
+  - name: reserve_army_regime
+    source: macro_series
+    definition_version: reserve_army_composite@v1
+
+# Pre-registered classes — no exploratory additions without a new study file.
+classes:
+  - earnings_beat_thin_reserve
+  - earnings_beat_slack_reserve
+  - earnings_miss_thin_reserve
+  - earnings_miss_slack_reserve
+
+min_events_per_class: 15   # 4-way partition; 20 (base) is too tight
+allow_lookahead: false
+classifier_version: null   # numeric classes only
+
+# Robustness variants (declared here so they cannot be added post-hoc):
+robustness:
+  - split_pre_post_2020: true   # COVID structural break in labor market

@@ -1,0 +1,36 @@
+# #7B1 Sanctions rerouting fade — circuits of capital lens on commodities.
+# Rationale: HETERODOX_STRATEGIES.md § "#7 Layer B1".
+#
+# Hypothesis: initial sanction-announcement spike in commodity futures fades
+# once rerouting infrastructure forms (third-country refining, alternative
+# shipping routes, price-cap workarounds). Most sanctions models assume flows
+# stop; they don't. Rerouting-stage label class encodes the physical reality.
+
+name: sanctions_rerouting_fade
+universe: universe_commodities.commodity_futures
+
+descriptive_only: true              # no commodity factor model yet
+peer_basket: commodity_broad        # DBC — see universe_commodities.yaml
+
+window: {pre: -5, post: 60}         # long post-window to capture rerouting phase
+estimation: null                    # descriptive-only, no market model fit
+
+events_source: sanctions_events     # OFAC + EU + UK announcement dates
+event_filter:
+  target_commodity_in: [crude, refined_products, nat_gas, coal, metals]
+
+# Class = the rerouting-stage semantic label at t+30. Pre-registered before
+# any label run. Stage transitions are dated and stored in article_labels
+# under sanctions_rerouting_stage@v1.
+classes:
+  - spike_only_no_rerouting          # stage stayed at "spike" through t+60
+  - spike_then_rerouting_forming     # stage transitioned to "rerouting_infrastructure_forming"
+  - spike_then_normalized            # stage transitioned to "normalized"
+
+min_events_per_class: 5
+allow_lookahead: false
+classifier_version: sanctions_rerouting_stage@v1
+
+robustness:
+  - by_commodity: [crude, nat_gas, metals]   # partition by underlying
+  - by_source_agency: [ofac, eu]             # unilateral vs coalition

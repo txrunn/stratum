@@ -1,0 +1,38 @@
+# #7B3 Semi-periphery manufacturing returns — Wallerstein/Arrighi lens.
+# Rationale: HETERODOX_STRATEGIES.md § "#7 Layer B3".
+#
+# Descriptive-only conditioning study: residual returns of semi-periphery ETFs
+# (EWW/VNM/EPOL/INDA) vs EM peer basket, conditioned on the reshoring_index
+# level (derived from earnings-call language frequency).
+
+name: reshoring_semi_periphery_returns
+universe: universe_commodities.semi_periphery_manufacturing
+
+descriptive_only: true
+peer_basket: em_equity              # EEM; also report em_equity_ex_china (EMXC)
+
+window: {pre: -63, post: 252}
+estimation: null
+
+# Reshoring index is a derived time-series from earnings-call transcripts
+# (frequency of reshoring/friend-shoring/nearshoring/China+1 language).
+# Regime = rolling-quantile bucket of the index level.
+conditioning_variables:
+  - name: reshoring_regime
+    source: reshoring_index
+    definition_version: reshoring_index_quantile@v1
+
+# Events = regime-bucket transition dates. Rare — index moves slowly.
+events_source: reshoring_regime_transitions
+
+classes:
+  - transition_into_high_reshoring
+  - transition_out_of_high_reshoring
+
+min_events_per_class: 3
+allow_lookahead: false
+classifier_version: null            # index is aggregate frequency, not per-article label
+
+robustness:
+  - by_country: [EWW, VNM, EPOL, INDA]     # descriptive per-name residuals
+  - peer_basket_ex_china: true             # EMXC to strip China-macro dominance

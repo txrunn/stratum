@@ -1,0 +1,48 @@
+# #6 Policy-dispersion trade — think-tank stance variance vs prediction markets.
+# Rationale: HETERODOX_STRATEGIES.md § "#6 Policy dispersion".
+#
+# Hypothesis: rising 90d dispersion in think-tank stances on a live policy
+# question predicts prediction-market price movement over the subsequent 30d,
+# because the Overton window shift precedes the market re-pricing.
+
+name: policy_dispersion
+# No securities universe. The response variable is prediction-market prices
+# from the prediction_market_prices table, keyed by market_id per policy
+# question in policy_questions.yaml.
+universe: policy_questions.all
+descriptive_only: true              # small N per question; no factor model
+
+window: {pre: 0, post: 30}          # 30-day forward price movement
+estimation: null
+
+events_source: dispersion_regime_transitions
+event_definition:
+  dispersion:
+    source: policy_stance_labels
+    window: 90d
+    metric: variance(stance)
+  transition_when:
+    dispersion_z: "> 1.5"           # 90d dispersion above rolling baseline
+    trend_direction:                # sign of dispersion change over last 30d
+      required_nonzero: true
+
+classes:
+  - dispersion_rising_toward_heterodox    # median stance moving heterodox
+  - dispersion_rising_toward_orthodox     # median stance moving orthodox
+  - dispersion_rising_bimodal             # polarizing without direction
+
+min_events_per_class: 4
+allow_lookahead: false
+classifier_version: policy_stance@v1
+
+# Response metric per policy question:
+#   price_change_30d = market.yes_price(t+30) - market.yes_price(t)
+# where market is the Kalshi/PredictIt contract keyed to the policy_question_id.
+response:
+  metric: yes_price_change
+  horizon_days: 30
+  sources_priority: [forecastex, kalshi, predictit_archive]
+
+robustness:
+  - by_policy_domain: [antitrust, tariffs, industrial_policy, tax]
+  - min_articles_per_window: 5      # skip questions with sparse think-tank coverage

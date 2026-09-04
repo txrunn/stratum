@@ -1,0 +1,43 @@
+# #2 Class-position-weighted sentiment on CPI releases.
+# Rationale: HETERODOX_STRATEGIES.md § "#2 Class-weighted sentiment".
+#
+# Runs on CPI rather than FOMC because labor-press cadence is higher on
+# inflation/wage prints. Same shape as #1 but with sentiment_gap between
+# capital-press and labor-press as a second gate.
+
+name: class_sentiment_overlay_cpi
+universe: universe_macro.rates + universe_macro.inflation
+benchmark: SPY
+
+window: {pre: 0, post: 3}
+estimation: {start: -250, end: -30}
+
+events_source: cpi_calendar
+
+signal:
+  window: {pre: -7, post: 0}
+  capital_press:
+    articles_filter: {outlet_class: capital, source: [wsj, bloomberg, ft, reuters]}
+  labor_press:
+    articles_filter: {outlet_class: labor, source: [jacobin, in_these_times, epi, reddit_antiwork]}
+  metrics:
+    capital_sentiment: mean(sentiment | outlet_class == capital)
+    labor_sentiment:   mean(sentiment | outlet_class == labor)
+    sentiment_gap:     capital_sentiment - labor_sentiment
+    uniformity:        1 - entropy(sentiment)
+  fires_when:
+    uniformity_z: "> 2.0"
+    abs_sentiment_gap_z: "> 1.0"
+
+classes:
+  - high_uniformity_gap_positive    # capital more bullish than labor
+  - high_uniformity_gap_negative    # labor more bullish than capital
+  - low_uniformity                  # baseline / no-trade
+
+min_events_per_class: 6             # CPI ≈ 12/yr; require ≥6 events per class
+allow_lookahead: false
+classifier_version: article_sentiment@v1
+
+robustness:
+  - labor_press_dropout_threshold: 3   # skip events with <3 labor-press articles
+  - split_pre_post_2020: true

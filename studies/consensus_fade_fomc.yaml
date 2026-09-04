@@ -1,0 +1,43 @@
+# #1 Consensus fade on FOMC (narrative-saturation mean reversion).
+# Rationale: HETERODOX_STRATEGIES.md § "#1 Consensus fade".
+#
+# Hypothesis: mean SCAR on SPY/TLT [0, +3d] fades the pre-event sentiment sign
+# for the two high-uniformity classes. Circuits of capital framework predicts
+# money-capital-dominated coverage under-samples productive/consumption signals.
+
+name: consensus_fade_fomc
+universe: universe_macro.broad_equity + universe_macro.rates + universe_macro.dollar
+benchmark: SPY
+
+window: {pre: 0, post: 3}
+estimation: {start: -250, end: -30}
+
+events_source: fomc_calendar    # dated FOMC statement releases, am/pm-timed
+
+# Signal computed from the articles + article_labels tables over the pre-event
+# window [event-7d, event-0d]. classifier_version pinned; a prompt change
+# creates article_sentiment@v2 and requires a new study file.
+signal:
+  window: {pre: -7, post: 0}
+  articles_filter:
+    outlet_class: capital
+    source: [wsj, bloomberg, ft, reuters]
+  metrics:
+    uniformity: 1 - entropy(sentiment)
+    money_capital_skew: fraction(circuit == money)
+  fires_when:
+    uniformity_z: "> 2.0"        # vs rolling 24-event baseline
+    money_capital_skew: "> 0.7"
+
+classes:                          # pre-registered before any label run
+  - high_uniformity_hawkish
+  - high_uniformity_dovish
+  - low_uniformity
+
+min_events_per_class: 8           # ~1 year of FOMC data per class minimum
+allow_lookahead: false
+classifier_version: article_sentiment@v1
+
+robustness:
+  - headline_only_vs_full_body: true   # capital-press RSS is often headline-only
+  - split_pre_post_2020: true          # policy regime shift

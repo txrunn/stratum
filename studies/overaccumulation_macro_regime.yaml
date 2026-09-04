@@ -1,0 +1,46 @@
+# #4 Overaccumulation / falling-rate-of-profit macro regime forward-return study.
+# Rationale: HETERODOX_STRATEGIES.md § "#4 Overaccumulation".
+#
+# Event = a quarterly regime-transition date (rare, macro-cycle). Response =
+# forward residual returns of SPY/QQQ/TLT over 6mo. Small N by design — this
+# is a macro-cycle signal, not a day-trade one. min_events_per_class = 5 gates
+# as underpowered rather than producing a fake p-value.
+
+name: overaccumulation_macro_regime
+universe: universe_macro.broad_equity + universe_macro.rates
+benchmark: SPY
+
+window: {pre: -20, post: 126}       # ~1mo lookback context, ~6mo forward
+estimation: {start: -500, end: -30} # longer estimation for macro-frequency events
+
+conditioning_variables:
+  - name: overaccumulation_regime
+    source: macro_series
+    definition_version: overaccumulation_composite@v1
+
+# Regime transitions are the events. Transition = state change between the
+# three regime classes computed from FRED macro_series (CP, NFCPATAX, PNFI,
+# buybacks_dividends_z1). Transition dates use ALFRED vintage-aware
+# knowledge_time, so a regime state on 2015-03-15 uses only data knowable
+# on 2015-03-15, not later revisions.
+events_source: regime_transitions
+
+classes:
+  - transition_into_high_financialization_falling_profit
+  - transition_out_of_high_financialization_falling_profit
+  - transition_between_normal_regimes
+
+min_events_per_class: 5    # macro-cycle events are rare; underpower flag OK
+allow_lookahead: false
+classifier_version: null
+
+macro_series_used:
+  - CP
+  - NFCPATAX
+  - PNFI
+  - z1_nonfinancial_buybacks
+  - z1_nonfinancial_dividends
+
+robustness:
+  - yield_curve_inversion_confirmation: true   # secondary conditioning
+  - split_pre_post_gfc: true                   # 2000-2007 vs 2010-present

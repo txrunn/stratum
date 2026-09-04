@@ -1,0 +1,36 @@
+# #7B2 Frontier extraction returns — Luxemburg primitive-accumulation lens.
+# Rationale: HETERODOX_STRATEGIES.md § "#7 Layer B2".
+#
+# Descriptive-only: multi-year residual returns of frontier extraction names
+# vs a broad commodity peer basket. Not a p-value hunt — the point is to see
+# whether the Luxemburg-lens thesis produces persistent residual returns as
+# accumulation exhausts existing frontiers. Small N per class, long horizon.
+
+name: frontier_resource_returns
+universe: universe_commodities.frontier_resources
+
+descriptive_only: true              # no EM/small-cap factor model that fits these
+peer_basket: commodity_broad        # DBC baseline; report residual-of-residual
+
+# Event = the date a frontier_extraction_thesis label is assigned to a name.
+# One event per name × label-version combination; typically a handful per year
+# per name as thesis strengthens/weakens.
+events_source: label_events
+event_filter:
+  label_class: frontier_extraction_thesis
+
+window: {pre: -63, post: 252}       # ~3mo lookback, ~1yr forward
+estimation: null
+
+classes:
+  - thesis_first_assigned            # inaugural thesis assignment
+  - thesis_reaffirmed                # strengthened without break
+  - thesis_downgraded                # explicit downgrade in label
+
+min_events_per_class: 3             # very small — descriptive report only
+allow_lookahead: false
+classifier_version: frontier_extraction_thesis@v1
+
+# Report style: descriptive tables per-name with peer-basket residuals over
+# horizon buckets (30d, 90d, 252d). No pooled t-statistic; the exploratory
+# flag is implicit in descriptive_only=true.
