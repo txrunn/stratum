@@ -99,3 +99,14 @@ These exist to be *unsurprising*. If the pipeline reports strong residual correl
 **Your actual positions.** The universe above is a bench for validating the machinery. Phase 1 — the theme-concentration report — should run on the union of this bench and real holdings pulled from both brokers, because the interesting number is *your* concentration, not the bench's. Adding it needs account numbers supplied at runtime; they don't go in the repo.
 
 Also absent: small caps (unreliable earnings verification), anything under ~$5B (option liquidity), and crypto-adjacent names (a distinct factor that would need its own cluster to be handled honestly rather than as noise).
+
+---
+
+## Non-equity universes for heterodox studies
+
+The heterodox strategies (see `HETERODOX_STRATEGIES.md`) touch macro instruments and commodities that don't fit the equity-centric selection criteria above. Two additional universe files carry them, following the same rationale-first style:
+
+- **`universe_macro.yaml`** — SPY / QQQ / TLT / GLD / TIP / UUP as event-study targets for macro releases (FOMC, CPI, NFP, PCE, GDP). Shares the SPY market factor with the core universe; TLT and TIP are additional response instruments for rate/inflation-release studies specifically.
+- **`universe_commodities.yaml`** — commodity futures (CL, BZ, NG, HG, GC, SI) plus resource-country ETFs (EWZ, EWW, EIDO, KSA), frontier resource names (EGY, LAAC, MP, PLL, LTHM), and semi-periphery ETFs (VNM, EPOL, INDA). Every member starts with `descriptive_only: true` because there is no commodity or EM equity factor model in `quant/market_model.py` yet — pooled inference is disabled until one exists.
+
+The existing 30-name equity bench is untouched. Heterodox studies reference the new universe files explicitly (`universe: universe_macro.all` or `universe: universe_commodities.frontier_resources`), so nothing pollutes Studies A/B.

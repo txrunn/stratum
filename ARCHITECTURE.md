@@ -42,6 +42,8 @@ The agent expands the fanout, calls the tool, and writes each response verbatim 
 `data/raw/robinhood/get_earnings_results/{symbol}.json` alongside a sidecar recording
 fetch timestamp, tool version, and parameters.
 
+The same spec pattern extends to non-MCP sources. `source: fred_alfred`, `source: rss`, `source: http_json`, and `source: scrape` are all first-class — the agent's ingester dispatches by `source` name, writes to `data/raw/<source>/<endpoint>/...`, and the compute layer never cares which one produced a given raw file. See `HETERODOX_STRATEGIES.md` for the ingest specs used by the news, macro, sanctions, and prediction-market pipelines.
+
 ---
 
 ## Layers
@@ -81,6 +83,23 @@ Core tables:
 
 SQLite is the right call here: single user, single writer, no concurrency, and the entire database is a file you can copy to pin a snapshot.
 
+### Additional tables for heterodox studies
+
+See `HETERODOX_STRATEGIES.md` for the full study designs. These extend the core schema without changing it; the two-clock discipline applies to every row.
+
+| Table | Grain | Notes |
+|---|---|---|
+| `macro_series` | `series_id × observation_date × vintage_date` | FRED/ALFRED. `knowledge_time = vintage_date` (ALFRED `realtime_start`). Vintage-aware; latest-only queries filter on `MAX(vintage_date) OVER (series_id, observation_date) WHERE vintage_date <= as_of`. |
+| `articles` | `article_id` | `source`, `title`, `url`, `published_at`, `knowledge_time` (fetch time), `body_hash`, `outlet_class ∈ {capital, labor, mixed, think_tank}`. |
+| `article_labels` | `article_id × classifier_version` | `sentiment [-1,+1]`, `confidence [0,1]`, `circuit ∈ {money, productive, consumption, mixed}`, evidence span, model id, prompt hash. |
+| `policy_stance_labels` | `article_id × policy_question_id × classifier_version` | Stance in `[-1, +1]`; used by #6. Kept separate from `article_labels` because a single article can hold stances on multiple questions. |
+| `sanctions_events` | `id` | `event_time`, `source_agency ∈ {ofac, eu, uk}`, `target_entity`, `target_commodity`, `action`, `url`. |
+| `chokepoint_tension` | `chokepoint × date` | Composite index from news mentions + shipping-rate deviation. Provenance stored per-observation. |
+| `reshoring_index` | `date` | Aggregate frequency of reshoring/friend-shoring/nearshoring/China+1 language in earnings-call transcripts. |
+| `prediction_market_prices` | `market_id × timestamp` | `yes_price`, `no_price`, `volume`, `source ∈ {kalshi, predictit_archive, forecastex}`. PredictIt archive rows are historical-only; Kalshi rows carry live provenance. |
+
+The `events.type` enumeration is extended: `earnings`, `macro_release` (subtype: `fomc`/`cpi`/`nfp`/`gdp`/`pce`), `sanctions_action`, `policy_milestone`. New event types slot into pooled studies via the same event-study harness.
+
 ### `semantic/` — labels are versioned data
 
 Classification is nondeterministic and costs money, so nothing is classified twice and nothing is classified anonymously. Each label row records the classifier version, prompt hash, model id, timestamp, the extracted evidence span, and a self-reported confidence.
@@ -90,6 +109,8 @@ Consequences that matter:
 - Changing a prompt does not invalidate history — it creates a new `classifier_version`, and old and new label sets can be **diffed** to see exactly which events changed class and whether a study's conclusion survives.
 - A study pins a `classifier_version`. Re-running reproduces.
 - Low-confidence labels can be excluded as a robustness check rather than silently trusted.
+
+Heterodox studies introduce three additional classifier families (`article_sentiment`, `policy_stance`, `sanctions_rerouting_stage`), each versioned independently and pinned per study.
 
 ### `quant/` — pure functions over the store
 
@@ -102,7 +123,7 @@ report at 2026-02-25, timing = pm   →   t=0 is 2026-02-26 (next session)
 report at 2026-02-25, timing = am   →   t=0 is 2026-02-25
 ```
 
-Also owns trading-day arithmetic, so `t-5` means five *sessions* back, not five calendar days.
+Also owns trading-day arithmetic, so `t-5` means five *sessions* back, not five calendar days. Macro-release events use the same alignment: a `pm` FOMC statement lands after the close, so `t=0` is the next session.
 
 **`market_model.py`** — estimation window `[-250, -30]` trading days, ending strictly before the event so the fit cannot see the outcome:
 
@@ -114,6 +135,8 @@ SCAR_i = CAR_i / (σ̂_εi · √n)      standardized by estimation-window resid
 ```
 
 Standardizing is not optional — without it a single volatile name dominates any pooled mean.
+
+Non-equity instruments (commodity futures, EM ETFs) are excluded from pooled inference until a commodity factor model and an EM-equity factor model exist. They enter `bars`/`events` with `descriptive_only: true` and every study touching them either pins the flag or drops them.
 
 **`event_study.py`** — pools events by class, reports mean SCAR with a cross-sectional t-statistic and a bootstrap confidence interval. Enforces three hygiene rules:
 
@@ -169,6 +192,12 @@ classifier_version: null      # numeric classes only — no semantic labels used
 
 The `runs` table stores the config hash next to the results, so an exploratory variant can never be mistaken for the pre-registered one.
 
+Heterodox studies use additional config fields:
+
+- `conditioning_variables:` — list of `macro_series`-derived regime flags to partition the event class on (e.g., `reserve_army_regime`, `overaccumulation_regime`).
+- `classifier_version:` gains real values (e.g., `article_sentiment@v3`) when semantic labels are consumed. Pinning is mandatory.
+- `descriptive_only:` — explicit flag to run without pooled inference, used for #7 commodity/EM studies until factor models exist.
+
 ---
 
 ## Open questions
@@ -177,3 +206,6 @@ The `runs` table stores the config hash next to the results, so an exploratory v
 - **ADR contamination.** TSM and ARM returns include an FX component that the market model will attribute to alpha. Either add a dollar-index factor or exclude them from pooled inference and keep them descriptive.
 - **Theme graph expansion cost.** Traversal is combinatorial — 26 names × ~6 competitors × ~6 themes, with each theme holding 20–50 members. Phase 1 caps at one hop and top-20 theme rank; whether a second hop adds signal is an empirical question, not a design one.
 - **Benchmark choice.** SPY for the market factor is the honest default, but a semis-heavy universe may want SMH as a second factor. Adding it risks regressing away the very co-movement Study B is trying to measure, so it stays a robustness check rather than the base specification.
+- **Commodity/EM factor model.** #7 studies start `descriptive_only`. Candidates: DBC / GSG / DBA for commodity factors, EEM for EM equity factor. Which combination cleanly absorbs geopolitical premium without eating the very signal is an open empirical question.
+- **Prediction-market historical data.** #6 depends on `prediction_market_prices`. Kalshi's public API covers current markets; PredictIt data has a fixed archive published after shutdown. Neither is a stable long-run source — the scrape spec pins a snapshot per run.
+- **News-source licensing.** Capital-press RSS feeds are typically headline-only; full-body access requires paid feeds. Sentiment on headline-only text is coarser but not useless; the study configs record which mode was used.
