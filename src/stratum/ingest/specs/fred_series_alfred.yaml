@@ -1,0 +1,43 @@
+# FRED macro series via ALFRED (vintage-aware).
+# Used by: #3 reserve-army composite, #4 overaccumulation composite.
+#
+# ALFRED (not FRED) is mandatory. FRED gives latest-known values (revised);
+# ALFRED gives what was knowable on date T via realtime_start/realtime_end.
+# BLS/BEA revise months back — using plain FRED would silently violate the
+# knowledge_time discipline. The extra param cost is small.
+
+source: fred_alfred
+endpoint: series_observations
+params:
+  # Return every observation of every vintage. Loader will filter by
+  # vintage_date <= as_of when the store is queried point-in-time.
+  realtime_start: "1900-01-01"
+  realtime_end: "9999-12-31"
+  output_type: 4          # ALFRED all-vintages format
+
+fanout:
+  over:
+    # Reserve-army composite (#3)
+    - {series_id: U6RATE,     rationale: broad_underemployment}
+    - {series_id: LNS11300060, rationale: prime_age_lfpr}
+    - {series_id: JTSQUR,     rationale: quits_rate}
+    - {series_id: ECIWAG,     rationale: eci_wages_salaries}
+    - {series_id: OPHNFB,     rationale: nonfarm_productivity}
+
+    # Overaccumulation composite (#4)
+    - {series_id: CP,         rationale: corporate_profits_after_tax}
+    - {series_id: NFCPATAX,   rationale: nonfinancial_corporate_profits}
+    - {series_id: PNFI,       rationale: private_nonresidential_fixed_investment}
+
+    # Yield-curve confirmation (#4 robustness)
+    - {series_id: T10Y2Y,     rationale: ten_year_two_year_spread}
+
+    # Z.1 flow-of-funds series (buybacks/dividends) — separate FRED IDs
+    - {series_id: NCBEILQ027S, rationale: z1_nonfinancial_equity_issuance_net}
+    - {series_id: BOGZ1FA106121075Q, rationale: z1_nonfinancial_dividends}
+
+  as: series_id
+
+cache:
+  key: "{series_id}"
+  ttl_days: 1       # ALFRED updates when a new vintage lands; check daily

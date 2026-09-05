@@ -1,0 +1,29 @@
+# Labor-press news for #2 (class-weighted sentiment overlay).
+# outlet_class = labor is set at ingest based on the source ID.
+#
+# Cadence is much lower than capital press. Study configs enforce a per-event
+# minimum article count and skip events below the threshold (see
+# class_sentiment_overlay.yaml).
+
+source: rss
+endpoint: feeds
+
+fanout:
+  over:
+    - {source_id: jacobin,              url: "https://jacobin.com/feed",                                     outlet_class: labor}
+    - {source_id: in_these_times,       url: "https://inthesetimes.com/rss",                                 outlet_class: labor}
+    - {source_id: epi_blog,             url: "https://www.epi.org/blog/feed/",                               outlet_class: labor}
+    - {source_id: labor_notes,          url: "https://labornotes.org/rss.xml",                               outlet_class: labor}
+    - {source_id: aflcio_now,           url: "https://aflcio.org/rss.xml",                                   outlet_class: labor}
+    - {source_id: teamsters_news,       url: "https://teamster.org/feed/",                                   outlet_class: labor}
+    - {source_id: uaw_news,             url: "https://uaw.org/feed/",                                        outlet_class: labor}
+
+  as: source_id
+
+cache:
+  key: "{source_id}/{fetch_date}"
+  ttl_days: 1
+
+# r/antiwork is a separate spec (reddit_antiwork.yaml) because it needs
+# PRAW credentials rather than plain RSS. Not included here to keep the
+# RSS ingester dispatch simple.

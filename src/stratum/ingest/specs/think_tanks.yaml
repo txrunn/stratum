@@ -1,0 +1,34 @@
+# Think-tank publications for #6 (policy dispersion).
+# outlet_class = think_tank is set at ingest.
+#
+# Roughly ordered from orthodox-Washington-Consensus to heterodox. The study
+# doesn't use this ordering directly — dispersion is computed as variance of
+# stance regardless of who holds which view — but the ordering documents the
+# selection rationale (a full spectrum, not a curated one).
+
+source: rss
+endpoint: feeds
+
+fanout:
+  over:
+    # Orthodox / Washington-Consensus lineage
+    - {source_id: piie,             url: "https://www.piie.com/rss.xml",                                orientation: orthodox_trade}
+    - {source_id: aei_econ,         url: "https://www.aei.org/topic/economics/feed/",                   orientation: orthodox_conservative}
+    - {source_id: cato,             url: "https://www.cato.org/rss/publications",                       orientation: libertarian}
+    - {source_id: peterson,         url: "https://www.peterson.org/rss.xml",                            orientation: fiscal_orthodox}
+
+    # Centrist / bipartisan
+    - {source_id: brookings,        url: "https://www.brookings.edu/feed/",                             orientation: centrist}
+    - {source_id: niskanen,         url: "https://www.niskanencenter.org/feed/",                        orientation: pragmatic_center}
+
+    # Heterodox / progressive / new-industrial-policy
+    - {source_id: roosevelt,        url: "https://rooseveltinstitute.org/feed/",                        orientation: progressive_industrial}
+    - {source_id: epi_research,     url: "https://www.epi.org/research/feed/",                          orientation: labor_progressive}
+    - {source_id: american_compass, url: "https://americancompass.org/feed/",                           orientation: national_conservative_industrial}
+    - {source_id: open_markets,     url: "https://www.openmarketsinstitute.org/feed",                   orientation: neo_brandeisian_antitrust}
+
+  as: source_id
+
+cache:
+  key: "{source_id}/{fetch_date}"
+  ttl_days: 1

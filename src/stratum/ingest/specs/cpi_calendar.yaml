@@ -1,0 +1,24 @@
+# BLS CPI release calendar for #2 (class-weighted sentiment overlay).
+#
+# BLS publishes a schedule of major economic releases. CPI is monthly, always
+# at 8:30 AM ET on the release date — so timing = am (t=0 is same session).
+
+source: http_json
+endpoint: bls_release_calendar
+
+urls:
+  cpi_schedule: "https://www.bls.gov/schedule/news_release/cpi.htm"
+  cpi_history: "https://www.bls.gov/cpi/tables/supplemental-files/historical-cpi-u-202508.xlsx"
+
+cache:
+  key: "cpi_calendar/{fetch_date}"
+  ttl_days: 30
+
+# Output shape (rows expanded to events with type=macro_release, subtype=cpi):
+#   event_time     = release timestamp (BLS-published)
+#   timing         = "am"     # 8:30 AM ET default
+#   subtype        = "cpi"
+#   metadata       = {reference_month, headline_yoy_expected, core_yoy_expected}
+#                    # expected values pulled from Bloomberg/Reuters consensus
+#                    # if available; else null and study skips surprise-magnitude
+#                    # analysis for that event.

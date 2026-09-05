@@ -1,0 +1,31 @@
+# PredictIt archive — one-shot historical scrape for #6 (policy dispersion).
+#
+# PredictIt shut down its US markets in mid-2024 and released a historical
+# CSV archive of all market prices. This spec pins that archive by URL and
+# expected checksum so the ingest is reproducible.
+#
+# ttl_days is deliberately huge — the archive doesn't change. Re-fetches only
+# happen if the checksum verification fails (indicating URL rot).
+
+source: http_json
+endpoint: predictit_historical_archive
+
+url: "https://www.predictit.org/api/historical/archive/all_markets.csv"
+expected_sha256: null   # fill in on first successful fetch; loader will verify subsequent fetches
+
+cache:
+  key: "predictit_archive/all_markets"
+  ttl_days: 3650    # 10 years — the archive is fixed
+
+# Output shape (rows expanded to prediction_market_prices):
+#   market_id       = predictit contract_id (integer)
+#   timestamp       = trade timestamp from CSV
+#   yes_price       = CSV yes_close
+#   no_price        = CSV no_close
+#   volume          = CSV daily_volume
+#   source          = "predictit_archive"
+
+# Note: mapping predictit contract_id to a policy_question_id in
+# policy_questions.yaml is manual — the archive uses PredictIt's internal
+# taxonomy that doesn't match Kalshi's. See policy_questions.yaml
+# `predictit_contract_map` block for the mapping table.

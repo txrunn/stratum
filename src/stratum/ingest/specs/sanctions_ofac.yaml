@@ -1,0 +1,30 @@
+# OFAC Recent Actions RSS — designations, delistings, general licenses.
+# Used by #7A sanctions_rerouting_fade study.
+#
+# Each item becomes a sanctions_events row after normalization. Loader
+# extracts target_entity and target_commodity from the item body using a
+# rules parser (not LLM) — the OFAC format is deterministic.
+
+source: rss
+endpoint: feed
+
+url: "https://ofac.treasury.gov/media/rss/recent_actions.xml"
+
+# knowledge_time = fetch timestamp. published_at = OFAC item pubDate.
+# event_time (for sanctions_events) is parsed from the "Action Date" field
+# in the item body, which is typically = pubDate for OFAC feed.
+
+cache:
+  key: "ofac_recent_actions/{fetch_date}"
+  ttl_days: 1
+
+# Rules parser targets (documented so downstream loaders can be verified):
+#
+#   target_entity     = <first "Entity:" or "Individual:" or "Vessel:" line>
+#   target_commodity  = derived from SDN designator + sectoral code:
+#                       [E.O. 14024 §1(a)(i)] → russia_specific
+#                       [E.O. 13846]          → iran_petroleum
+#                       [E.O. 13224]          → terrorism (excluded from
+#                                               commodity study)
+#   action            ∈ {designation, delisting, general_license_issued,
+#                        general_license_expired, guidance_updated}

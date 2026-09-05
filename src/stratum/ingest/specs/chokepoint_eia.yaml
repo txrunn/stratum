@@ -1,0 +1,34 @@
+# EIA chokepoint reports + supplementary shipping data for chokepoint_tension index.
+# Used by #7A.
+#
+# EIA publishes World Oil Transit Chokepoints periodically (irregular cadence).
+# The tension index combines: (a) news-mention frequency per chokepoint,
+# (b) shipping-rate deviation from 3-year mean (BDI/BDTI as proxies),
+# (c) insurance-premium proxies when available.
+
+source: http_json
+endpoint: chokepoint_dataset
+
+fanout:
+  over:
+    - {chokepoint: strait_of_hormuz,   region: persian_gulf,  reference_capacity_mb_d: 21.0}
+    - {chokepoint: strait_of_malacca,  region: se_asia,       reference_capacity_mb_d: 15.5}
+    - {chokepoint: suez_canal,         region: red_sea,       reference_capacity_mb_d: 5.5}
+    - {chokepoint: bab_el_mandeb,      region: red_sea,       reference_capacity_mb_d: 6.2}
+    - {chokepoint: strait_of_bosphorus, region: black_sea,    reference_capacity_mb_d: 2.9}
+    - {chokepoint: cape_of_good_hope,  region: africa,        reference_capacity_mb_d: 4.5}
+    - {chokepoint: panama_canal,       region: atlantic_pacific, reference_capacity_mb_d: 1.0}
+    - {chokepoint: strait_of_taiwan,   region: e_asia,        reference_capacity_mb_d: null}   # LNG/container heavy, not oil
+
+  as: chokepoint
+
+# The index itself is computed downstream in quant/. This ingest spec only
+# gathers the raw inputs: EIA reports (annually-ish), Baltic Dirty Tanker
+# Index BDTI (daily via HTTP JSON), and reference capacity constants.
+sources:
+  eia_transit_report: "https://www.eia.gov/international/analysis/special-topics/World_Oil_Transit_Chokepoints"
+  bdti_daily:          "https://www.balticexchange.com/en/data-services/routes-indices.html"
+
+cache:
+  key: "{chokepoint}/{fetch_date}"
+  ttl_days: 1

@@ -1,0 +1,77 @@
+# Policy questions tracked by #6 (policy dispersion study).
+#
+# Each question maps to a set of prediction-market tickers (currently just
+# Kalshi, since PredictIt shut down US markets in mid-2024 — historical
+# PredictIt questions map via predictit_contract_map). Each question also
+# gets a `policy_domain` for the robustness partition in the study config.
+#
+# LLM stance classification (policy_stance@v1) rates each think-tank
+# publication in [-1, +1] on the specific question — not on the domain.
+# A publication can hold multiple stances (one per relevant question).
+#
+# Starter question set. Expand as new markets list or new policy debates
+# gain enough think-tank coverage to make dispersion meaningful.
+
+questions:
+
+  # Antitrust
+  - id: ftc_amazon_case_wins_2027
+    domain: antitrust
+    text: "Will the FTC prevail (in whole or dominant part) in FTC v. Amazon by end of 2027?"
+    kalshi_ticker: null   # market not yet listed as of writing
+    predictit_contract_ids: []
+
+  - id: google_search_remedies_structural
+    domain: antitrust
+    text: "Will the remedy in US v. Google (search) include structural divestiture rather than only behavioral relief?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  # Tariffs
+  - id: china_tariffs_sec_301_remain_2027
+    domain: tariffs
+    text: "Will the Section 301 China tariffs remain at ≥90% of current levels through end of 2027?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  - id: mexico_tariffs_reimposed_2026
+    domain: tariffs
+    text: "Will US impose new tariffs on Mexican imports (≥5%) at any point in 2026?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  # Industrial policy
+  - id: chips_act_expansion_2027
+    domain: industrial_policy
+    text: "Will Congress pass a CHIPS Act expansion or successor bill by end of 2027?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  - id: ira_repeal_material_2027
+    domain: industrial_policy
+    text: "Will Congress materially repeal or defund core IRA provisions by end of 2027?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  # Tax
+  - id: corporate_rate_change_2027
+    domain: tax
+    text: "Will the federal corporate income tax rate change from 21% by end of 2027?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+  - id: unrealized_gains_tax_enacted_2028
+    domain: tax
+    text: "Will Congress enact any tax on unrealized capital gains for individuals by end of 2028?"
+    kalshi_ticker: null
+    predictit_contract_ids: []
+
+# --- Mapping helpers referenced by ingest specs ---
+
+# Kalshi ingest fanout consumes this map. Populate kalshi_ticker per question
+# above; entries without a listed market are skipped at ingest time.
+kalshi_ticker_map: {}    # auto-derived from questions[].kalshi_ticker at load
+
+# PredictIt archive rows carry integer contract IDs from PredictIt's internal
+# taxonomy. Map them to question IDs here as they are researched.
+predictit_contract_map: {}

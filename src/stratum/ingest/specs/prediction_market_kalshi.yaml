@@ -1,0 +1,32 @@
+# Kalshi current-market prices for #6 (policy dispersion response variable).
+#
+# Kalshi has a public REST API (no auth needed for market data). Prices are
+# pulled per policy_question_id defined in policy_questions.yaml. The fanout
+# expands over the question set.
+
+source: http_json
+endpoint: kalshi_market_state
+
+base_url: "https://api.elections.kalshi.com/trade-api/v2"
+
+fanout:
+  over: policy_questions.kalshi_ticker_map
+  as: kalshi_ticker
+
+request:
+  path: "/markets/{kalshi_ticker}"
+  method: GET
+
+# knowledge_time = fetch timestamp. Prices are snapshotted daily; intraday
+# price series requires the trades endpoint (separate spec if needed later).
+cache:
+  key: "kalshi/{kalshi_ticker}/{fetch_date}"
+  ttl_days: 1
+
+# Output shape (stored to prediction_market_prices):
+#   market_id       = kalshi_ticker
+#   timestamp       = fetch timestamp
+#   yes_price       = market.yes_ask (last)
+#   no_price        = market.no_ask (last)
+#   volume          = market.volume
+#   source          = "kalshi"

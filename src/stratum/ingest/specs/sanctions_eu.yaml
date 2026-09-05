@@ -1,0 +1,27 @@
+# EU Council sanctions announcements — Official Journal L-series updates.
+# Used by #7A sanctions_rerouting_fade study.
+#
+# The EU doesn't publish a clean single RSS feed for sanctions the way OFAC
+# does. This spec targets the EEAS restrictive-measures news page and the
+# Official Journal's L-series RSS filtered for sanctions regulations.
+# Normalization is messier than OFAC — the loader stages raw HTML/PDF into
+# data/raw/ and a separate parser produces sanctions_events rows.
+
+source: http_json
+endpoint: eeas_restrictive_measures
+
+urls:
+  - {source_id: eeas_measures,       url: "https://www.eeas.europa.eu/eeas/sanctions_en?format=rss",   parser: eeas_html_parser}
+  - {source_id: oj_l_series_filter,  url: "https://eur-lex.europa.eu/oj/direct-access.html",           parser: oj_l_series_scraper}
+
+cache:
+  key: "eu_sanctions/{source_id}/{fetch_date}"
+  ttl_days: 1
+
+# Parser output shape (produces sanctions_events rows):
+#   event_time     = adoption date from Official Journal
+#   source_agency  = "eu"
+#   target_entity  = extracted from Annex I of the regulation
+#   target_commodity = derived from regulation number's known scope
+#                       (2022/263 → russian_oil, 2014/833 → russian_defense, ...)
+#   action         = {adoption, amendment, extension, sunset}

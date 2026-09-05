@@ -1,0 +1,29 @@
+# Capital-press news for #1 (consensus fade) and #2 (class-weighted overlay).
+# outlet_class = capital is set at ingest based on the source ID.
+#
+# Note: most of these feeds are headline-only. Full-body access requires paid
+# subscriptions. Sentiment on headline-only is coarser but not useless; the
+# study configs record which mode was used (see consensus_fade_fomc.yaml
+# robustness block).
+
+source: rss
+endpoint: feeds
+
+fanout:
+  over:
+    - {source_id: wsj_markets,        url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",              outlet_class: capital}
+    - {source_id: wsj_business,       url: "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml",            outlet_class: capital}
+    - {source_id: bloomberg_markets,  url: "https://www.bloomberg.com/feed/podcast/etf-report.xml",      outlet_class: capital}
+    - {source_id: ft_home,            url: "https://www.ft.com/?format=rss",                             outlet_class: capital}
+    - {source_id: ft_markets,         url: "https://www.ft.com/markets?format=rss",                      outlet_class: capital}
+    - {source_id: reuters_business,   url: "https://feeds.reuters.com/reuters/businessNews",             outlet_class: capital}
+    - {source_id: reuters_markets,    url: "https://feeds.reuters.com/reuters/marketsNews",              outlet_class: capital}
+    - {source_id: cnbc_top,           url: "https://www.cnbc.com/id/100003114/device/rss/rss.html",      outlet_class: capital}
+
+  as: source_id
+
+# knowledge_time = fetch timestamp (recorded in provenance sidecar).
+# published_at comes from the feed's <pubDate>.
+cache:
+  key: "{source_id}/{fetch_date}"    # daily bucket so re-runs don't hit feed
+  ttl_days: 1

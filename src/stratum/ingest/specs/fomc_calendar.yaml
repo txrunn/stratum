@@ -1,0 +1,28 @@
+# FOMC statement release calendar for #1 (consensus fade) and any other
+# macro-release studies that condition on FOMC.
+#
+# The Fed publishes a JSON calendar of scheduled meetings and past
+# statement release timestamps. am/pm timing matters — FOMC statements
+# almost always land at 2:00 PM ET, so timing = pm for the calendar's
+# event_alignment (see quant/calendar.py).
+
+source: http_json
+endpoint: fomc_calendar
+
+urls:
+  scheduled_meetings: "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  historical_statements: "https://www.federalreserve.gov/monetarypolicy/fomccalendars_historical.htm"
+
+# knowledge_time for scheduled future meetings = fetch time.
+# knowledge_time for historical statements = statement release timestamp
+# (unambiguous — the Fed itself publishes when).
+
+cache:
+  key: "fomc_calendar/{fetch_date}"
+  ttl_days: 30   # calendar changes rarely; a monthly refresh is enough
+
+# Output shape (rows expanded to events with type=macro_release, subtype=fomc):
+#   event_time     = statement release timestamp
+#   timing         = "pm"       # 2:00 PM ET default; verified per-event
+#   subtype        = "fomc"
+#   metadata       = {is_scheduled, is_intermeeting, minutes_release_date}
