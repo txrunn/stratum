@@ -22,6 +22,7 @@ universe: universe.core_ai + universe.hyperscalers
 benchmark: SPY
 
 window: {pre: -1, post: 5}
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: {start: -250, end: -30}
 
 # Reserve-army composite is derived from FRED/ALFRED macro_series; pinned version.

@@ -32,13 +32,20 @@ reflects **design-time** state only. No stratum study has been run — Phase 0
   ``data/raw/<source>/<endpoint>/<key>.json``), not at a resolved artifact.
   Nothing has been fetched, so nothing can yet be machine-verified against
   a fetched artifact.
-* ``target_date`` is derived from the study's ``window.post`` under a
-  trading-day approximation (252 sessions/year) because stratum's own
+* ``target_date`` is derived from the study's ``window.post`` and its
+  ``window_unit`` (``trading_days``, the ARCHITECTURE.md event-study
+  convention — approximated at 252 sessions/year — or ``calendar_days``,
+  for studies like ``policy_dispersion`` driven by continuous market
+  pricing rather than trading sessions) because stratum's own
   session-accurate calendar (``quant/calendar.py``) is unimplemented
   (ARCHITECTURE.md lists it as owning "the single place the am/pm rule
-  lives"). Once it exists, replace ``_approximate_trading_days`` here with a
-  real call into it and this module's own test suite will need updating —
-  the approximation is deliberately isolated to one function for that reason.
+  lives"). Once it exists, replace the ``trading_days`` branch of
+  ``_window_timedelta`` with a real call into it — the approximation is
+  deliberately isolated to one function for that reason. Getting this
+  wrong is not cosmetic: ``policy_dispersion``'s ``window.post: 30`` is
+  calendar days (it matches ``response.horizon_days: 30`` exactly), and
+  applying the trading-day approximation to it would silently inflate a
+  30-day horizon to ~43 days.
 
 None of this is deception dressed as rigor: the point of putting a
 not-yet-run study through mlLm's schema at all is that CLAUDE.md's
@@ -57,10 +64,13 @@ from typing import Any
 from core.claim import ConfidenceAssessment, Prediction
 from core.provenance import Citation, LocatorType, SourceLocator, SourceType
 
-# Sessions per year, used only to convert a study's window.post (trading
-# days) into an approximate calendar target_date. See module docstring.
+# Sessions per year, used only to convert a study's window.post when
+# window_unit is trading_days into an approximate calendar target_date.
+# See module docstring.
 _TRADING_DAYS_PER_YEAR = 252
 _CALENDAR_DAYS_PER_TRADING_DAY = 365.25 / _TRADING_DAYS_PER_YEAR
+
+_VALID_WINDOW_UNITS = ("trading_days", "calendar_days")
 
 
 class UnmappedFrameworkError(ValueError):
@@ -68,21 +78,33 @@ class UnmappedFrameworkError(ValueError):
 
     This is a finding, not a bug to route around: the study's analytical
     lens has no slot in mlLm's core.framework.Framework roster (14 Marxist
-    currents) or its AdversarialTradition roster (schools mlLm tests
-    itself against, not schools it reasons from). See the ``framework:``
-    comment in the affected study's YAML for the specific gap, and mlLm's
-    Tradition type (``Literal["marxist"] | AdversarialTradition``), which
-    has no third bucket for a friendly non-Marxist heterodox lens.
+    currents), its HeterodoxEconomicTradition roster (5 non-Marxist,
+    non-adversarial economic schools — added in mlLm v0.7 specifically to
+    close this gap for policy_dispersion.yaml), or its AdversarialTradition
+    roster (schools mlLm tests itself against, not schools it reasons
+    from). All 8 studies committed as of this bridge map to one of the
+    first two; this error exists for whatever comes next. See the
+    ``framework:`` comment in the affected study's YAML for the specific
+    gap, and mlLm's ``core.framework.Tradition`` type for the full set of
+    homes a lens can have.
     """
 
 
-def _approximate_trading_days(days: int) -> timedelta:
-    """Convert a count of trading-day sessions to an approximate timedelta.
+def _window_timedelta(days: int, unit: str) -> timedelta:
+    """Convert a study's window.post count to an approximate timedelta.
 
-    See module docstring — isolated here so it is the one place to change
-    when stratum's quant/calendar.py exists and can do this exactly.
+    ``unit`` must be ``"trading_days"`` (the ARCHITECTURE.md event-study
+    convention, approximated here) or ``"calendar_days"`` (exact — no
+    approximation needed). See module docstring for why this distinction
+    is load-bearing, not cosmetic.
     """
-    return timedelta(days=days * _CALENDAR_DAYS_PER_TRADING_DAY)
+    if unit == "calendar_days":
+        return timedelta(days=days)
+    if unit == "trading_days":
+        return timedelta(days=days * _CALENDAR_DAYS_PER_TRADING_DAY)
+    raise ValueError(
+        f"window_unit must be one of {_VALID_WINDOW_UNITS}, got {unit!r}"
+    )
 
 
 def _zero_confidence(rationale: str) -> ConfidenceAssessment:
@@ -137,31 +159,37 @@ def study_to_prediction(
             tests for a reproducible ``target_date``.
 
     Raises:
-        UnmappedFrameworkError: if ``study["framework"]`` is ``None``
-            (currently true only of ``policy_dispersion.yaml`` — see its
-            own ``framework:`` comment).
-        KeyError: if the study is missing ``hypothesis``, ``classes``, or
-            ``min_events_per_class`` — all mandatory once a study is
-            wired through this bridge.
+        UnmappedFrameworkError: if ``study["framework"]`` is ``None`` — no
+            study currently committed does this (see the class docstring).
+        KeyError: if the study is missing ``hypothesis``, ``classes``,
+            ``min_events_per_class``, or ``window_unit`` — all mandatory
+            once a study is wired through this bridge. ``window_unit`` is
+            required rather than defaulted deliberately: guessing wrong
+            silently mis-scales every downstream horizon (see module
+            docstring's ``policy_dispersion`` example).
+        ValueError: if ``window_unit`` is present but not one of
+            ``"trading_days"`` / ``"calendar_days"``.
     """
     framework = study.get("framework")
     if framework is None:
         raise UnmappedFrameworkError(
             f"{study['name']!r} declares framework: null — its analytical "
-            "lens has no mlLm Framework/AdversarialTradition mapping. See "
-            "the study YAML's own framework: comment for the specific gap."
+            "lens has no mlLm Framework/HeterodoxEconomicTradition/"
+            "AdversarialTradition mapping. See the study YAML's own "
+            "framework: comment for the specific gap."
         )
 
     name: str = study["name"]
     hypothesis: str = " ".join(study["hypothesis"].split())  # collapse YAML block-scalar whitespace
     classes: list[str] = study["classes"]
     min_events: int = study["min_events_per_class"]
+    window_unit: str = study["window_unit"]
     descriptive_only: bool = bool(study.get("descriptive_only", False))
     window = study.get("window") or {}
     post_days = int(window.get("post", 0)) if window else 0
 
     as_of = as_of or datetime.now(UTC)
-    horizon = _approximate_trading_days(max(post_days, 1))
+    horizon = _window_timedelta(max(post_days, 1), window_unit)
 
     evaluation_method = (
         "Descriptive report only; no pooled t-statistic (study is "

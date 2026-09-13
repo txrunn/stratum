@@ -21,6 +21,7 @@ universe: universe_macro.rates + universe_macro.inflation
 benchmark: SPY
 
 window: {pre: 0, post: 3}
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: {start: -250, end: -30}
 
 events_source: cpi_calendar

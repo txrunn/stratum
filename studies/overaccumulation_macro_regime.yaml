@@ -24,6 +24,7 @@ universe: universe_macro.broad_equity + universe_macro.rates
 benchmark: SPY
 
 window: {pre: -20, post: 126}       # ~1mo lookback context, ~6mo forward
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: {start: -500, end: -30} # longer estimation for macro-frequency events
 
 conditioning_variables:

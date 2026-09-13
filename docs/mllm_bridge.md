@@ -2,8 +2,8 @@
 
 `semantic/mllm_bridge.py` types every stratum study's pre-registration as an
 [mlLm](../../mlLm) `core.claim.Prediction`. This document is the mapping
-table and the one known gap; the module docstring carries the epistemic
-argument for why this exists and what it does and doesn't claim.
+table; the module docstring carries the epistemic argument for why this
+exists and what it does and doesn't claim.
 
 ## Why
 
@@ -29,7 +29,7 @@ this argument.
 | `sanctions_rerouting_fade.yaml` | `orthodox-marxism` | Circuits-of-capital lens applied to physical commodity flows |
 | `frontier_resource_returns.yaml` | `luxemburgism` | Luxemburg's ongoing-primitive-accumulation thesis |
 | `reshoring_semi_periphery_returns.yaml` | `world-systems-theory` | Wallerstein/Arrighi semi-periphery thesis |
-| `policy_dispersion.yaml` | **`null`** | See § Known gap below |
+| `policy_dispersion.yaml` | `institutionalism` | Institutional prior lag / Overton-window motion — see § Resolved gap below |
 
 Every mapping to `orthodox-marxism` above is a direct attribution to Marx's
 own concepts, not a default. Where `HETERODOX_STRATEGIES.md` notes overlap
@@ -41,11 +41,11 @@ framework is permissible only if the citation is acknowledged as
 cross-framework borrowing") — acknowledged in the study's own YAML comment,
 never folded silently into the declared `framework:`.
 
-## Known gap: study #6 (`policy_dispersion`)
+## Resolved gap: study #6 (`policy_dispersion`)
 
 `policy_dispersion.yaml`'s mechanism — institutional prior lag / Overton-window
-motion — is Institutionalist economics. It has no slot in either of mlLm's
-two rosters:
+motion — is Institutionalist economics. As of mlLm v0.6 it had no slot in
+either of mlLm's two rosters:
 
 * **`core.framework.Framework`** (14 Marxist currents) — Institutionalism
   isn't a Marxist current.
@@ -55,17 +55,34 @@ two rosters:
   would misrepresent the study as an adversarial stress-test rather than a
   first-class hypothesis.
 
-mlLm's `Tradition` type is `Literal["marxist"] | AdversarialTradition` — a
-closed binary. There is no third bucket for a friendly, non-Marxist
-heterodox lens, even though `HETERODOX_STRATEGIES.md` § Analytical toolkit
-reference explicitly draws on several (Post-Keynesian, MMT, Kaleckian,
-Minskyan, Institutionalist) as adjacent schools stratum treats as real
-analytical tools, not opposition.
+mlLm's `Tradition` type was `Literal["marxist"] | AdversarialTradition` — a
+closed binary, with no third bucket for a friendly, non-Marxist heterodox
+lens, even though `HETERODOX_STRATEGIES.md` § Analytical toolkit reference
+explicitly draws on several (Post-Keynesian, MMT, Kaleckian, Minskyan,
+Institutionalist) as adjacent schools stratum treats as real analytical
+tools, not opposition.
 
-`study_to_prediction()` raises `UnmappedFrameworkError` on this study rather
-than force a mapping. Closing this gap is an mlLm-side decision (whether and
-how to extend `Tradition`), not a stratum-side one — filed here rather than
-worked around.
+**mlLm v0.7 closed this gap directly**, adding `core.framework.HeterodoxEconomicTradition`
+(5 schools: Institutionalism, Post-Keynesianism, Kaleckian Economics, Modern
+Monetary Theory, Minskyan Financial-Instability Theory) and
+`AnalyticalLens = Framework | HeterodoxEconomicTradition` as the actual type
+of every claim's `framework:` field — see mlLm's META.md § Heterodox-Economic
+Tradition Roster. `policy_dispersion.yaml` now declares
+`framework: institutionalism` and produces a valid `Prediction` like every
+other study; `UnmappedFrameworkError` remains in the bridge as a guard for
+whatever study comes next, not because this one still needs it (see
+`tests/test_mllm_bridge.py::test_unmapped_framework_still_raises_on_a_constructed_payload`).
+
+This also surfaced a real, separate bug that resolving the framework gap
+made visible: `policy_dispersion.yaml`'s `window.post: 30` is *calendar*
+days (it matches `response.horizon_days: 30` exactly), not the trading-day
+sessions every other study's window uses per ARCHITECTURE.md's event-study
+convention. Wiring #6 in without also fixing this would have silently
+inflated its 30-day horizon to ~43 days under the trading-day approximation.
+Every study now declares an explicit `window_unit` (`trading_days` or
+`calendar_days`); the bridge requires it (`KeyError` if absent) rather than
+defaulting, because a wrong default here is exactly the kind of error that
+looks like it works.
 
 ## Epistemic status
 

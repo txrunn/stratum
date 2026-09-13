@@ -22,6 +22,7 @@ descriptive_only: true
 peer_basket: em_equity              # EEM; also report em_equity_ex_china (EMXC)
 
 window: {pre: -63, post: 252}
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: null
 
 # Reshoring index is a derived time-series from earnings-call transcripts

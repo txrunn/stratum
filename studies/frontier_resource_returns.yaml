@@ -30,6 +30,7 @@ event_filter:
   label_class: frontier_extraction_thesis
 
 window: {pre: -63, post: 252}       # ~3mo lookback, ~1yr forward
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: null
 
 classes:

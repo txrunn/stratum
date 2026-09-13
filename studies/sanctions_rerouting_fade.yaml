@@ -24,6 +24,7 @@ descriptive_only: true              # no commodity factor model yet
 peer_basket: commodity_broad        # DBC — see universe_commodities.yaml
 
 window: {pre: -5, post: 60}         # long post-window to capture rerouting phase
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: null                    # descriptive-only, no market model fit
 
 events_source: sanctions_events     # OFAC + EU + UK announcement dates

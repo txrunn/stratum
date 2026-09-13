@@ -19,6 +19,7 @@ universe: universe_macro.broad_equity + universe_macro.rates + universe_macro.do
 benchmark: SPY
 
 window: {pre: 0, post: 3}
+window_unit: trading_days   # ARCHITECTURE.md quant/calendar.py convention; see semantic/mllm_bridge.py
 estimation: {start: -250, end: -30}
 
 events_source: fomc_calendar    # dated FOMC statement releases, am/pm-timed

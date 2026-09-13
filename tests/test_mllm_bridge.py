@@ -2,8 +2,12 @@
 
 This is the demonstration, not a synthetic example: all 8 studies
 committed under studies/ are loaded exactly as event_study.py will one
-day load them, and each is asserted to produce either a valid
-core.claim.Prediction or the specific, named UnmappedFrameworkError.
+day load them, and each is asserted to produce a valid
+core.claim.Prediction. (UnmappedFrameworkError and the window_unit
+requirement are exercised against constructed payloads below — no
+committed study currently triggers either, which is itself the point:
+policy_dispersion was the one gap, and mlLm v0.7's
+HeterodoxEconomicTradition roster closed it.)
 """
 
 from __future__ import annotations
@@ -24,20 +28,16 @@ from stratum.semantic.mllm_bridge import (
 STUDIES_DIR = Path(__file__).parent.parent / "studies"
 STUDY_FILES = sorted(STUDIES_DIR.glob("*.yaml"))
 
-# Every study file that must produce a valid Prediction.
-MAPPED_STUDIES = [f for f in STUDY_FILES if f.name != "policy_dispersion.yaml"]
-
 FIXED_AS_OF = datetime(2026, 9, 13, tzinfo=UTC)
 
 
 def test_all_eight_study_files_are_discovered():
     """Guards against a silent glob/rename mismatch hiding a study."""
     assert len(STUDY_FILES) == 8
-    assert len(MAPPED_STUDIES) == 7
 
 
-@pytest.mark.parametrize("path", MAPPED_STUDIES, ids=lambda p: p.stem)
-def test_mapped_study_produces_a_valid_prediction(path):
+@pytest.mark.parametrize("path", STUDY_FILES, ids=lambda p: p.stem)
+def test_every_committed_study_produces_a_valid_prediction(path):
     study = load_study(path)
     prediction = study_to_prediction(study, as_of=FIXED_AS_OF)
 
@@ -51,7 +51,7 @@ def test_mapped_study_produces_a_valid_prediction(path):
     assert prediction.time_horizon > timedelta(0)
 
 
-@pytest.mark.parametrize("path", MAPPED_STUDIES, ids=lambda p: p.stem)
+@pytest.mark.parametrize("path", STUDY_FILES, ids=lambda p: p.stem)
 def test_prediction_round_trips_through_json(path):
     """The Prediction produced is a real, persistable record."""
     study = load_study(path)
@@ -60,16 +60,55 @@ def test_prediction_round_trips_through_json(path):
     assert reloaded == original
 
 
-def test_policy_dispersion_raises_the_named_error_not_a_bad_mapping():
-    """study #6's lens (institutional prior lag) has no Framework slot.
+def test_policy_dispersion_maps_to_institutionalism():
+    """The resolved gap: study #6's lens now has a real home.
 
-    The bridge must refuse, loudly and specifically, rather than default
-    to some framework and misrepresent the study's actual lens.
+    mlLm v0.7 added HeterodoxEconomicTradition specifically for this
+    case (see META.md § Heterodox-Economic Tradition Roster and
+    docs/mllm_bridge.md § Resolved gap).
     """
     study = load_study(STUDIES_DIR / "policy_dispersion.yaml")
-    assert study["framework"] is None
-    with pytest.raises(UnmappedFrameworkError, match="policy_dispersion"):
-        study_to_prediction(study, as_of=FIXED_AS_OF)
+    assert study["framework"] == "institutionalism"
+    prediction = study_to_prediction(study, as_of=FIXED_AS_OF)
+    assert prediction.framework == "institutionalism"
+
+
+def test_policy_dispersion_horizon_uses_calendar_days_not_trading_days():
+    """The unit bug this bridge would have shipped if #6 had been wired
+    in without also fixing window_unit: window.post=30 is calendar days
+    (it matches response.horizon_days=30 exactly). Applying the
+    trading-day approximation would inflate it to ~43 days."""
+    study = load_study(STUDIES_DIR / "policy_dispersion.yaml")
+    assert study["window_unit"] == "calendar_days"
+    prediction = study_to_prediction(study, as_of=FIXED_AS_OF)
+    assert prediction.target_date == FIXED_AS_OF + timedelta(days=30)
+
+
+def test_event_study_horizon_uses_trading_day_approximation():
+    """Contrast case: an event-study-style config's window.post is
+    trading-day sessions, not calendar days, and should NOT come out to
+    exactly that many calendar days."""
+    study = load_study(STUDIES_DIR / "consensus_fade_fomc.yaml")
+    assert study["window_unit"] == "trading_days"
+    prediction = study_to_prediction(study, as_of=FIXED_AS_OF)
+    # post=3 trading days -> slightly more than 3 calendar days.
+    assert prediction.target_date > FIXED_AS_OF + timedelta(days=3)
+    assert prediction.target_date < FIXED_AS_OF + timedelta(days=5)
+
+
+def test_unmapped_framework_still_raises_on_a_constructed_payload():
+    """No committed study exercises this path anymore; the guard itself
+    must still work for whatever study is added next."""
+    incomplete = {
+        "name": "hypothetical_unmapped_study",
+        "framework": None,
+        "hypothesis": "placeholder",
+        "classes": ["a", "b"],
+        "min_events_per_class": 5,
+        "window_unit": "trading_days",
+    }
+    with pytest.raises(UnmappedFrameworkError, match="hypothetical_unmapped_study"):
+        study_to_prediction(incomplete, as_of=FIXED_AS_OF)
 
 
 def test_falsification_criteria_reference_the_studys_own_classes():
@@ -106,6 +145,36 @@ def test_missing_hypothesis_field_fails_loudly():
         "framework": "orthodox-marxism",
         "classes": ["a", "b"],
         "min_events_per_class": 5,
+        "window_unit": "trading_days",
     }
     with pytest.raises(KeyError):
         study_to_prediction(incomplete, as_of=FIXED_AS_OF)
+
+
+def test_missing_window_unit_fails_loudly_rather_than_guessing():
+    """window_unit has no default on purpose — see the module docstring's
+    policy_dispersion example for what a wrong guess would silently do."""
+    incomplete = {
+        "name": "no_window_unit_study",
+        "framework": "orthodox-marxism",
+        "hypothesis": "placeholder",
+        "classes": ["a", "b"],
+        "min_events_per_class": 5,
+        "window": {"post": 30},
+    }
+    with pytest.raises(KeyError):
+        study_to_prediction(incomplete, as_of=FIXED_AS_OF)
+
+
+def test_invalid_window_unit_is_rejected():
+    payload = {
+        "name": "bad_window_unit_study",
+        "framework": "orthodox-marxism",
+        "hypothesis": "placeholder",
+        "classes": ["a", "b"],
+        "min_events_per_class": 5,
+        "window_unit": "fortnights",
+        "window": {"post": 2},
+    }
+    with pytest.raises(ValueError, match="window_unit must be one of"):
+        study_to_prediction(payload, as_of=FIXED_AS_OF)

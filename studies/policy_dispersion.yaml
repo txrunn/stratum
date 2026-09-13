@@ -6,18 +6,16 @@
 # because the Overton window shift precedes the market re-pricing.
 
 name: policy_dispersion
-# framework: deliberately absent. This study's mechanism (institutional
-# prior lag / Overton-window motion) is Institutionalist economics, not
-# a Marxist current — it has no slot in mllm's core.framework.Framework
-# roster (14 Marxist currents) and isn't on the AdversarialTradition
-# roster either (that roster tests mlLm's output against these schools,
-# it doesn't host them as a friendly analytical lens). mllm's Tradition
-# type is Literal["marxist"] | AdversarialTradition — a closed binary
-# with no third "friendly non-Marxist heterodox" bucket. See
-# semantic/mllm_bridge.py and docs/mllm_bridge.md § Known gap: study #6.
-# study_to_prediction() raises ValueError on this study rather than
-# force a framework mapping that would misrepresent the lens.
-framework: null
+# This study's mechanism (institutional prior lag / Overton-window
+# motion) is Institutionalist economics — not a Marxist current, so it
+# has no slot in mllm's core.framework.Framework roster (14 Marxist
+# currents), and not a school mlLm tests against, so it doesn't belong
+# on the AdversarialTradition roster either. mllm v0.7 added
+# core.framework.HeterodoxEconomicTradition for exactly this case — a
+# school mlLm can reason *from* without being either the primary
+# subject or the opposition. See META.md § Heterodox-Economic Tradition
+# Roster and docs/mllm_bridge.md § Resolved gap: study #6.
+framework: institutionalism
 hypothesis: >
   Think tanks, sell-side research, and financial press were trained on
   the 1980-2015 Washington Consensus; the regime has been shifting since
@@ -32,6 +30,9 @@ universe: policy_questions.all
 descriptive_only: true              # small N per question; no factor model
 
 window: {pre: 0, post: 30}          # 30-day forward price movement
+window_unit: calendar_days   # continuous market pricing, not a trading-session
+                              # event study; matches response.horizon_days below
+                              # exactly. See semantic/mllm_bridge.py.
 estimation: null
 
 events_source: dispersion_regime_transitions
