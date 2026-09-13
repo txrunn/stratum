@@ -12,6 +12,9 @@ fanout:
   over:
     - {source_id: jacobin,              url: "https://jacobin.com/feed",                                     outlet_class: labor}
     - {source_id: in_these_times,       url: "https://inthesetimes.com/rss",                                 outlet_class: labor}
+    - {source_id: american_prospect,    url: "https://prospect.org/feed/",                                   outlet_class: labor}
+    - {source_id: portside,             url: "https://portside.org/rss.xml",                                 outlet_class: labor}
+    - {source_id: more_perfect_union,   url: "https://perfectunion.us/feed/",                                outlet_class: labor}
     - {source_id: epi_blog,             url: "https://www.epi.org/blog/feed/",                               outlet_class: labor}
     - {source_id: labor_notes,          url: "https://labornotes.org/rss.xml",                               outlet_class: labor}
     - {source_id: aflcio_now,           url: "https://aflcio.org/rss.xml",                                   outlet_class: labor}
@@ -24,6 +27,10 @@ cache:
   key: "{source_id}/{fetch_date}"
   ttl_days: 1
 
-# r/antiwork is a separate spec (reddit_antiwork.yaml) because it needs
-# PRAW credentials rather than plain RSS. Not included here to keep the
-# RSS ingester dispatch simple.
+# r/antiwork was considered and dropped: forum sentiment is too selection-
+# biased (a self-selected, heavily-moderated subreddit skews toward the most
+# online and most aggrieved fraction of labor sentiment, not a representative
+# sample) and too small-N per macro event to serve as a primary source. The
+# quantitative complement to labor-press sentiment is NLRB activity data
+# (ingest/specs/nlrb_activity.yaml, store table labor_activity_series) —
+# real organizing-activity counts rather than proxy sentiment from a forum.

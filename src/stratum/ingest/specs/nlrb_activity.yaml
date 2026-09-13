@@ -1,0 +1,35 @@
+# NLRB election petitions and unfair-labor-practice (ULP) charges.
+# Used by: #3 (reserve-army composite, as a quantitative complement to
+# FRED aggregates — rising organizing activity is itself a symptom of a
+# thinning reserve army) and #2 (as a check on labor-press sentiment: does
+# reported sentiment track actual organizing activity, or diverge from it).
+#
+# NLRB publishes case-activity reports (election petitions filed under
+# NLRA Section 9, ULP charges filed under Section 8) with a multi-week
+# reporting lag. knowledge_time = the report's release date, never
+# period_end — see labor_activity_series in ARCHITECTURE.md.
+
+source: http_json
+endpoint: nlrb_case_activity
+
+urls:
+  election_petitions: "https://www.nlrb.gov/reports/graphs-data/petitions-and-elections"
+  ulp_charges:         "https://www.nlrb.gov/reports/graphs-data/unfair-labor-practice-charges"
+
+fanout:
+  over:
+    - {metric: nlrb_election_petitions, region: us}
+    - {metric: nlrb_ulp_charges,        region: us}
+  as: metric
+
+cache:
+  key: "{metric}/{fetch_date}"
+  ttl_days: 14   # NLRB updates monthly-ish; biweekly check is enough
+
+# Output shape (rows expanded to labor_activity_series):
+#   metric          = "nlrb_election_petitions" | "nlrb_ulp_charges"
+#   period_start / period_end = the reporting month's bounds
+#   value           = count for that period
+#   region          = "us" (NLRB doesn't break out by state in the summary reports)
+#   knowledge_time  = NLRB report release date (NOT period_end)
+#   source          = "nlrb"

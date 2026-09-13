@@ -2,12 +2,14 @@
 
 Signal-generation studies grounded in heterodox economic analytical toolkits — Marxian, Post-Keynesian, Kaleckian, world-systems — layered on stratum's typed event timeline and versioned semantic label store. Marxism is used as a *pragmatic analytical school*, not a political stance (Dengist "whichever cat catches the mouse" framing). The edge is analytical: lenses that mainstream quant desks under-use.
 
+**This doc is operational** — signal mechanics, store surfaces, study configs. For the actual theoretical grounding of each premise (primary citations, the falsifiable claim each theory licenses, and what's been rejected or corrected along the way) see [`THEORY.md`](./THEORY.md).
+
 All six strategies live inside stratum's existing discipline:
 
 - **Two-clock store** (`event_time`, `knowledge_time`) — no signal is computed from data that wasn't knowable on the decision date.
 - **Semantic labels are versioned data** — every LLM classification records `classifier_version`, `prompt_hash`, `model_id`, evidence, confidence. Studies pin a version.
 - **Studies are pre-registered YAML configs** — event classes declared before the run.
-- **No execution paths.** Order placement lives in a sibling repo (working name `stratum-trader`). Stratum only produces signals and validates them against realized returns / event-contract settlements.
+- **No execution paths.** Order placement, position-specific config, and secrets live in a sibling private repo (`stratum-config`). Stratum only produces signals and validates them against realized returns / event-contract settlements.
 
 ## Build order
 
@@ -19,13 +21,18 @@ All six strategies live inside stratum's existing discipline:
 6. **#6 Policy dispersion** — think-tank RSS + `policy_stance` classifier + new `prediction_market_prices` store table (scraped Kalshi/PredictIt historical).
 7. **#7B analytical add-ons** — three more label classes (rerouting stage, frontier extraction, semi-periphery beneficiary) once #7A is live.
 
-## What lives in the sibling repo (execution)
+## What lives in the sibling repo (`stratum-config`)
 
+Private, holds both the personal-configuration and execution concerns that don't belong in a public research repo:
+
+- Local universe overrides (your actual holdings, not just the bench).
+- Study variants pinned to your portfolio; alert routing; runtime settings (cache TTLs, LLM budget).
+- Secrets (broker credentials, API keys) — never in stratum.
 - Signal → order-payload translators for IBKR MCP, Robinhood MCP, ForecastEx event contracts.
 - Alpaca paper-trading harness for pre-live validation of every signal.
 - Position-tracking, PnL, account-summary reads.
 
-Nothing in the execution repo contributes back to stratum. Stratum is read-only, always.
+Nothing in `stratum-config` contributes back to stratum. Stratum is read-only and public, always.
 
 ---
 
@@ -46,7 +53,9 @@ Nothing in the execution repo contributes back to stratum. Stratum is read-only,
 
 **Kill risks.** COVID structural break in the labor market — split-sample pre/post 2020. Small N per regime cell if 4-quadrant analysis is required.
 
-**Execution home.** Sibling repo trades CPI-above-X on ForecastEx + longs in labor-cost-sensitive tickers (EAT, DRI, MAN, RHI) when the composite fires.
+**Execution home.** `stratum-config` trades CPI-above-X on ForecastEx + longs in labor-cost-sensitive tickers (EAT, DRI, MAN, RHI) when the composite fires.
+
+**Quantitative complement.** `labor_activity_series` (NLRB election petitions, ULP charges — see `ingest/specs/nlrb_activity.yaml`) is a second, independent read on labor-market tightness: rising organizing activity is itself a symptom of a thinning reserve army (workers testing bargaining leverage), distinct from the FRED aggregates. Not yet wired into the composite; a natural v2 addition once the v1 composite has a track record.
 
 ---
 
@@ -67,7 +76,7 @@ Nothing in the execution repo contributes back to stratum. Stratum is read-only,
 
 **Kill risks.** False positives in long expansions (2011/2015/2018 fired without imminent recession). Confirm with yield-curve inversion as a secondary conditioning variable. Signal is macro-cycle — study horizons in months, not days.
 
-**Execution home.** Sibling repo takes VIX futures long or QQQ put spreads on regime confirmation.
+**Execution home.** `stratum-config` takes VIX futures long or QQQ put spreads on regime confirmation.
 
 **Deferred to Phase 2.** Per-name screening (high-financialization / low-capex candidates for individual put spreads) requires either the 30-name bench (selection bias — semis have been the strongest margin story of the cycle) or a full S&P 500 fundamentals fanout. Neither is required for the macro-regime signal to work; both are optional richer follow-ons.
 
@@ -75,7 +84,7 @@ Nothing in the execution repo contributes back to stratum. Stratum is read-only,
 
 ## #1 — Consensus fade (narrative-saturation mean reversion)
 
-**Premise.** Different economic actors sit in different circuits of capital (money-capital, productive-capital, consumption — Marx's M–C–P–C′–M′ schema). Financial press oversamples money-capital's viewpoint and undersamples productive-capital and consumption/labor signals. Not conspiracy — structural informational asymmetry. Creates predictable blind spots when sentiment saturates around macro releases.
+**Premise.** Financial media sourcing is structurally skewed toward official and corporate voices — not because of bias in the pejorative sense, but because of how the field of financial journalism actually works (Herman & Chomsky's sourcing filter; Bourdieu's account of journalistic fields competing for position using the same limited legitimate sources). That skew oversamples money-capital's viewpoint (rates, liquidity, asset prices) and undersamples productive-capital and household-balance-sheet signals. Creates predictable blind spots when sentiment saturates around macro releases. Full citations and the falsifiable claim: [`THEORY.md`](./THEORY.md#1--consensus-fade-on-macro-releases).
 
 **Stratum surface.**
 
@@ -90,7 +99,7 @@ Nothing in the execution repo contributes back to stratum. Stratum is read-only,
 
 **Kill risks.** Small sample (≈8 FOMC/yr, ≈12 CPI/yr). LLM scoring drift — mitigated by `classifier_version` pinning. Start with FOMC only (cleanest event, richest coverage).
 
-**Execution home.** Sibling repo trades ForecastEx event contracts on the fade direction.
+**Execution home.** `stratum-config` trades ForecastEx event contracts on the fade direction.
 
 ---
 
@@ -103,13 +112,13 @@ Nothing in the execution repo contributes back to stratum. Stratum is read-only,
 - Store: shares `articles` and `article_labels` tables with #1. `outlet_class ∈ {capital, labor, mixed}` classified at ingest based on outlet metadata.
 - Universe: `universe_macro.yaml`.
 - Study: `studies/class_sentiment_overlay.yaml` — trades only when #1 fires AND `|sentiment_gap| > 1σ`.
-- Ingest: `ingest/specs/news_labor_press.yaml` — Jacobin, In These Times, EPI, major union press releases, r/antiwork via Reddit archive.
+- Ingest: `ingest/specs/news_labor_press.yaml` — Jacobin, In These Times, The American Prospect, Portside, More Perfect Union, EPI, Labor Notes, major union press releases.
 
 **Signal.** `sentiment_gap = mean(sentiment | outlet_class=capital) − mean(sentiment | outlet_class=labor)`.
 
 **Study.** Overlay on #1's pre-registered classes; secondary partition by `gap_direction`.
 
-**Kill risks.** Labor press cadence is irregular — dropouts on many macro events. Best on macro-labor events (BLS releases, min-wage/tariff-impact debates), not FOMC.
+**Kill risks.** Labor press cadence is irregular — dropouts on many macro events. Best on macro-labor events (BLS releases, min-wage/tariff-impact debates), not FOMC. (An earlier draft of this spec used r/antiwork as a labor-sentiment source; dropped — forum sentiment is too selection-biased and moderation-driven to serve as a primary source. `labor_activity_series` (NLRB, see #3) is the quantitative complement instead.)
 
 **Execution home.** Same as #1.
 
@@ -140,13 +149,13 @@ Three semantic label classes applied over Layer A events:
 
 **Kill risks (whole strategy).** Fat-tailed geopolitical events are idiosyncratic — edge is on *pricing* of chronic tension, not predicting events. Commodity/EM factor model absence forces `descriptive_only` posture initially. World-systems returns are multi-year — patience required.
 
-**Execution home.** Sibling repo trades commodity futures via IBKR, long-dated options on frontier/semi-periphery ETFs.
+**Execution home.** `stratum-config` trades commodity futures via IBKR, long-dated options on frontier/semi-periphery ETFs.
 
 ---
 
 ## #6 — Policy dispersion (regime-shift detector)
 
-**Premise.** Institutional prior lag. Think tanks, sell-side research, and financial press were trained on the 1980–2015 Washington Consensus (free trade, permissive antitrust, tax cuts). Since ∼2016 the regime is shifting — bipartisan protectionism, revived antitrust (Khan/Kanter), industrial policy (CHIPS, IRA). Dispersion across think-tank stances on a live policy question is a leading indicator of Overton-window motion, which prediction markets tend to under-price until the shift becomes obvious.
+**Premise.** Paradigm lag, not conspiracy: think tanks, sell-side research, and financial press were trained on the 1980–2015 Washington Consensus (free trade, permissive antitrust, tax cuts), and interpretive communities continue operating within a paradigm even as anomalies accumulate (Kuhn). Since ∼2016 the regime has been shifting — bipartisan protectionism, revived antitrust (Khan/Kanter), industrial policy (CHIPS, IRA) — and a hegemonic framework loses coherence gradually, showing up first as rising *contestation* before the new position visibly wins (Gramsci). Dispersion across think-tank stances is therefore a leading indicator of Overton-window motion, which prediction markets tend to under-price until the shift becomes obvious. Full citations: [`THEORY.md`](./THEORY.md#6--policy-dispersion).
 
 **Stratum surface.**
 
@@ -161,18 +170,22 @@ Three semantic label classes applied over Layer A events:
 
 **Kill risks.** Small N of major policy events per year. Subjective LLM classification (mitigated by `classifier_version` pinning). Kalshi historical data quality varies by market; PredictIt archive is fixed.
 
-**Execution home.** Sibling repo trades Kalshi/ForecastEx policy contracts (merger blocks, tariff sticking, bill passage).
+**Execution home.** `stratum-config` trades Kalshi/ForecastEx policy contracts (merger blocks, tariff sticking, bill passage).
 
 ---
 
 ## Analytical toolkit reference
 
-- **Circuits of capital** (M–C–P–C′–M′): informational asymmetry in financial media (#1, #2), sanctions rerouting (#7B1).
-- **Reserve army of labor**: wage/inflation-persistence regime (#3).
-- **Falling rate of profit / overaccumulation**: crisis-cycle timing (#4).
-- **Primitive accumulation (Luxemburg)**: resource-frontier identification (#7B2).
+Full citations and falsifiable claims for each: [`THEORY.md`](./THEORY.md).
+
+- **Herman-Chomsky propaganda model / Bourdieu on journalistic fields**: informational asymmetry in financial media (#1, #2).
+- **Reserve army of labor (Marx) / Kalecki 1943**: wage/inflation-persistence regime (#3).
+- **Falling rate of profit (Marx) / Kaleckian profit equation / Minsky**: crisis-cycle timing (#4).
+- **Kuhnian paradigm lag / Gramscian hegemony**: regime-shift detection (#6).
+- **Circuits of capital** (M–C–P–C′–M′, Marx Vol. 2): sanctions rerouting (#7B1) — the one place this framework is the correct anchor.
+- **Primitive accumulation (Luxemburg) / Harvey's accumulation by dispossession**: resource-frontier identification (#7B2).
 - **World-systems (Wallerstein, Arrighi)**: semi-periphery investment thesis (#7B3).
-- **Kaleckian profit equation**: cross-check on #4 and sectoral read on #1.
+- **Lenin/Bukharin on imperialism as economic category**: structural (not episodic) reading of #7A chokepoint/sanctions activity.
 
 Adjacent heterodox schools drawn on: Post-Keynesian, MMT (fiscal-dominance sensitivity), Minskyan financial-instability, Institutionalist (regime shift in #6).
 

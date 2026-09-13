@@ -19,7 +19,7 @@ signal:
   capital_press:
     articles_filter: {outlet_class: capital, source: [wsj, bloomberg, ft, reuters]}
   labor_press:
-    articles_filter: {outlet_class: labor, source: [jacobin, in_these_times, epi, reddit_antiwork]}
+    articles_filter: {outlet_class: labor, source: [jacobin, in_these_times, american_prospect, portside, more_perfect_union, epi_blog, labor_notes]}
   metrics:
     capital_sentiment: mean(sentiment | outlet_class == capital)
     labor_sentiment:   mean(sentiment | outlet_class == labor)

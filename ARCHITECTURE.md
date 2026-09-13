@@ -95,6 +95,7 @@ See `HETERODOX_STRATEGIES.md` for the full study designs. These extend the core 
 | `policy_stance_labels` | `article_id × policy_question_id × classifier_version` | Stance in `[-1, +1]`; used by #6. Kept separate from `article_labels` because a single article can hold stances on multiple questions. |
 | `sanctions_events` | `id` | `event_time`, `source_agency ∈ {ofac, eu, uk}`, `target_entity`, `target_commodity`, `action`, `url`. |
 | `chokepoint_tension` | `chokepoint × date` | Composite index from news mentions + shipping-rate deviation. Provenance stored per-observation. |
+| `labor_activity_series` | `metric × period_start × region` | NLRB election petitions and ULP charges — counts, not text. `knowledge_time` = NLRB release date, not `period_end` (reporting lag is several weeks; using `period_end` would leak). Quantitative complement to `article_labels`-derived labor-press sentiment (#2) and an independent input alongside FRED aggregates in the #3 reserve-army composite. |
 | `reshoring_index` | `date` | Aggregate frequency of reshoring/friend-shoring/nearshoring/China+1 language in earnings-call transcripts. |
 | `prediction_market_prices` | `market_id × timestamp` | `yes_price`, `no_price`, `volume`, `source ∈ {kalshi, predictit_archive, forecastex}`. PredictIt archive rows are historical-only; Kalshi rows carry live provenance. |
 
