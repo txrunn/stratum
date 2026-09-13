@@ -81,3 +81,11 @@ def test_macro_series_asof_respects_lookback(conn):
     series = macro_series_asof(conn, "U6RATE", as_of="2024-04-10", lookback_periods=2)
     assert len(series) == 2
     assert series[-1].observation_date == "2024-03-01"
+
+
+def test_macro_series_asof_respects_lookback_start(conn):
+    load_macro_series(conn, U6RATE_FIXTURE)
+    # Excludes the Jan observation by calendar date, regardless of period count.
+    series = macro_series_asof(conn, "U6RATE", as_of="2024-04-10", lookback_start="2024-02-01")
+    dates = [obs.observation_date for obs in series]
+    assert dates == ["2024-02-01", "2024-03-01"]

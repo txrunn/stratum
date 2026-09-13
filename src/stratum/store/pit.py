@@ -50,7 +50,11 @@ def latest_macro_value(
 
 
 def macro_series_asof(
-    conn: sqlite3.Connection, series_id: str, as_of: str, lookback_periods: int | None = None
+    conn: sqlite3.Connection,
+    series_id: str,
+    as_of: str,
+    lookback_periods: int | None = None,
+    lookback_start: str | None = None,
 ) -> list[MacroObservation]:
     """The full point-in-time time series of `series_id` knowable as of `as_of`.
 
@@ -58,6 +62,12 @@ def macro_series_asof(
     latest vintage of that observation known at `as_of`. This is the series
     a composite calculation would have seen had it been computed on `as_of`,
     not the revised series we'd see querying FRED today.
+
+    `lookback_start` bounds by calendar date (e.g. "10 years before as_of") —
+    the right choice when combining series of different frequencies (JOLTS
+    is monthly, ECI is quarterly), since a fixed observation *count* would
+    cover a different span for each. `lookback_periods`, if also given, caps
+    the count after the date filter — apply one, both, or neither.
     """
     query = """
         SELECT series_id, observation_date, vintage_date, value
@@ -83,6 +93,8 @@ def macro_series_asof(
         )
         for row in rows
     ]
+    if lookback_start is not None:
+        obs = [o for o in obs if o.observation_date >= lookback_start]
     if lookback_periods is not None:
         obs = obs[-lookback_periods:]
     return obs
