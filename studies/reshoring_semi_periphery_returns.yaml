@@ -6,6 +6,16 @@
 # level (derived from earnings-call language frequency).
 
 name: reshoring_semi_periphery_returns
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Wallerstein/Arrighi world-systems thesis (HETERODOX_STRATEGIES.md § 7B3)
+# maps directly to world-systems-theory per META.md § Framework Roster.
+framework: world-systems-theory
+hypothesis: >
+  World-systems theory predicts which semi-periphery states catch a
+  manufacturing shift out of the core. Semi-periphery manufacturing ETFs
+  show residual returns versus an EM peer basket that rise with the
+  reshoring_index level (transition_into_high_reshoring) and fall as the
+  index recedes (transition_out_of_high_reshoring).
 universe: universe_commodities.semi_periphery_manufacturing
 
 descriptive_only: true

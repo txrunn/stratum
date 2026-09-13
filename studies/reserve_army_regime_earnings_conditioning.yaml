@@ -7,6 +7,17 @@
 # by consensus estimates → beats are smaller-in-magnitude, misses larger.
 
 name: reserve_army_regime_earnings_conditioning
+# mlLm core.framework.Framework slug this study's lens maps to. See
+# semantic/mllm_bridge.py — required to type this study as a
+# core.claim.Prediction. Reserve army of labor is Marx's own concept
+# (Capital Vol. I, ch. 25); no cross-framework borrowing involved.
+framework: orthodox-marxism
+hypothesis: >
+  Mean post-earnings SCAR differs by reserve-army regime because
+  margin/labor-cost sensitivity is regime-dependent. In thin_reserve
+  regimes capital's wage-bargaining power weakens, so margin compression
+  is under-priced by consensus estimates: beats are smaller-in-magnitude,
+  misses larger.
 universe: universe.core_ai + universe.hyperscalers
 benchmark: SPY
 

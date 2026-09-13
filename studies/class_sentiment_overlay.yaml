@@ -6,6 +6,17 @@
 # capital-press and labor-press as a second gate.
 
 name: class_sentiment_overlay_cpi
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Same circuits-of-capital lens as consensus_fade_fomc.yaml, applied to
+# the capital-press/labor-press divergence rather than uniformity alone.
+framework: orthodox-marxism
+hypothesis: >
+  Capital-press and labor-press outlets sit in different material
+  positions and surface different information about the same release.
+  Divergence between them (sentiment_gap) on a CPI print is a two-sided
+  signal that filters false positives in the consensus-fade signal,
+  because a genuine class-position disagreement is a stronger prior than
+  uniform capital-press sentiment alone.
 universe: universe_macro.rates + universe_macro.inflation
 benchmark: SPY
 

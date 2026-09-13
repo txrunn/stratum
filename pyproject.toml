@@ -4,17 +4,27 @@ version = "0.0.1"
 description = "Semantic layer over quantitative market data — event studies and peer-graph validation"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
-requires-python = ">=3.11"
+# Raised from >=3.11 to match mllm's floor (see the `mllm` dependency below).
+requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2",
     "numpy>=1.26",
     "statsmodels>=0.14",   # market model, cross-sectional tests
     "scipy>=1.13",
     "pyyaml>=6.0",         # study configs and universe.yaml
+    # Pre-registered studies are typed against mllm's Claim/Provenance
+    # schemas (semantic/mllm_bridge.py) so a study's hypothesis is a
+    # core.claim.Prediction, not free prose. Local sibling checkout —
+    # both repos are pre-alpha and colocated for development; see
+    # `[tool.uv.sources]` below. Only mllm's `core` package is imported.
+    "mllm",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[tool.uv.sources]
+mllm = { path = "../mlLm", editable = true }
 
 [build-system]
 requires = ["hatchling"]

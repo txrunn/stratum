@@ -7,6 +7,16 @@
 # accumulation exhausts existing frontiers. Small N per class, long horizon.
 
 name: frontier_resource_returns
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Luxemburg's ongoing-primitive-accumulation thesis (HETERODOX_STRATEGIES.md
+# § 7B2) is luxemburgism per META.md § Framework Roster, not orthodox-marxism.
+framework: luxemburgism
+hypothesis: >
+  New extraction frontiers open when accumulation exhausts existing ones.
+  Names newly assigned the frontier_extraction_thesis label show
+  persistent residual returns versus a broad commodity peer basket over a
+  multi-year horizon as the frontier thesis strengthens (thesis_reaffirmed)
+  rather than reverses (thesis_downgraded).
 universe: universe_commodities.frontier_resources
 
 descriptive_only: true              # no EM/small-cap factor model that fits these

@@ -8,6 +8,7 @@ All six strategies live inside stratum's existing discipline:
 - **Semantic labels are versioned data** — every LLM classification records `classifier_version`, `prompt_hash`, `model_id`, evidence, confidence. Studies pin a version.
 - **Studies are pre-registered YAML configs** — event classes declared before the run.
 - **No execution paths.** Order placement lives in a sibling repo (working name `stratum-trader`). Stratum only produces signals and validates them against realized returns / event-contract settlements.
+- **Studies are typed as mlLm Predictions.** Each study below carries a `framework:` field (an mlLm `core.framework.Framework` slug) and a `hypothesis:` field; `semantic/mllm_bridge.py` builds a `core.claim.Prediction` from them mechanically. See `docs/mllm_bridge.md` for the mapping table and the one study (#6) that doesn't map.
 
 ## Build order
 

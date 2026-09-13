@@ -6,6 +6,15 @@
 # money-capital-dominated coverage under-samples productive/consumption signals.
 
 name: consensus_fade_fomc
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Circuits of capital (M-C-P-C'-M') is Marx's own schema (Capital Vol. II).
+framework: orthodox-marxism
+hypothesis: >
+  Financial press oversamples money-capital's viewpoint and undersamples
+  productive-capital and consumption/labor signals — a structural
+  informational asymmetry, not a conspiracy. Mean SCAR on SPY/TLT [0, +3d]
+  fades the pre-event sentiment sign for the two high-uniformity classes
+  once narrative saturation around the FOMC release resolves.
 universe: universe_macro.broad_equity + universe_macro.rates + universe_macro.dollar
 benchmark: SPY
 

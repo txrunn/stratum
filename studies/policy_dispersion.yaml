@@ -6,6 +6,25 @@
 # because the Overton window shift precedes the market re-pricing.
 
 name: policy_dispersion
+# framework: deliberately absent. This study's mechanism (institutional
+# prior lag / Overton-window motion) is Institutionalist economics, not
+# a Marxist current — it has no slot in mllm's core.framework.Framework
+# roster (14 Marxist currents) and isn't on the AdversarialTradition
+# roster either (that roster tests mlLm's output against these schools,
+# it doesn't host them as a friendly analytical lens). mllm's Tradition
+# type is Literal["marxist"] | AdversarialTradition — a closed binary
+# with no third "friendly non-Marxist heterodox" bucket. See
+# semantic/mllm_bridge.py and docs/mllm_bridge.md § Known gap: study #6.
+# study_to_prediction() raises ValueError on this study rather than
+# force a framework mapping that would misrepresent the lens.
+framework: null
+hypothesis: >
+  Think tanks, sell-side research, and financial press were trained on
+  the 1980-2015 Washington Consensus; the regime has been shifting since
+  roughly 2016 toward bipartisan protectionism and industrial policy.
+  Rising 90-day dispersion in think-tank stances on a live policy
+  question is a leading indicator of Overton-window motion that
+  prediction markets under-price until the shift becomes obvious.
 # No securities universe. The response variable is prediction-market prices
 # from the prediction_market_prices table, keyed by market_id per policy
 # question in policy_questions.yaml.

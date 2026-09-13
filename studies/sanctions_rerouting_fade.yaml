@@ -7,6 +7,17 @@
 # stop; they don't. Rerouting-stage label class encodes the physical reality.
 
 name: sanctions_rerouting_fade
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Circuits of capital lens applied to physical commodity flows under
+# sanctions (HETERODOX_STRATEGIES.md § 7B1).
+framework: orthodox-marxism
+hypothesis: >
+  Sanctions models that assume flows stop are wrong; commodities re-route
+  through third countries. The initial sanction-announcement spike in
+  commodity futures fades once rerouting infrastructure forms, so a
+  position held through the "spike" stage should show materially
+  different forward returns once the label transitions to
+  rerouting_infrastructure_forming versus staying at spike_only.
 universe: universe_commodities.commodity_futures
 
 descriptive_only: true              # no commodity factor model yet

@@ -7,6 +7,19 @@
 # as underpowered rather than producing a fake p-value.
 
 name: overaccumulation_macro_regime
+# See reserve_army_regime_earnings_conditioning.yaml for the field's role.
+# Falling-rate-of-profit / overaccumulation is Marx's crisis theory
+# (Capital Vol. III). HETERODOX_STRATEGIES.md notes overlap with the
+# Kaleckian profit equation and Minskyan financial instability — those
+# are cross-framework borrowing (META.md § Framework Roster — Rules),
+# acknowledged here rather than folded silently into the declared lens.
+framework: orthodox-marxism
+hypothesis: >
+  Capital accumulates faster than profitable outlets absorb it;
+  financialization (buybacks, dividends) displaces reinvestment; margins
+  compress; crisis follows. Forward 6m/12m SPY returns are lower
+  conditional on the regime jointly defined by high financialization and
+  falling aggregate profit growth.
 universe: universe_macro.broad_equity + universe_macro.rates
 benchmark: SPY
 
