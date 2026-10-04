@@ -1,0 +1,19 @@
+{
+  "source_id": "wsj_markets",
+  "outlet_class": "capital",
+  "fetched_at": "2026-09-04T18:40:00Z",
+  "entries": [
+    {
+      "title": "Fed Holds Rates Steady, Signals Caution on Inflation",
+      "link": "https://www.wsj.com/articles/fed-holds-rates-example-1",
+      "published": "2026-09-04T18:32:00Z",
+      "summary": "The Federal Reserve left interest rates unchanged Wednesday."
+    },
+    {
+      "title": "Stocks Rally as Powell Strikes Dovish Tone",
+      "link": "https://www.wsj.com/articles/stocks-rally-example-2",
+      "published": "2026-09-04T18:35:00Z",
+      "summary": "Major indexes rose after the Fed chair's press conference."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "metric": "nlrb_election_petitions",
+  "region": "us",
+  "release_date": "2026-08-15",
+  "observations": [
+    {"period_start": "2026-06-01", "period_end": "2026-06-30", "value": 412},
+    {"period_start": "2026-07-01", "period_end": "2026-07-31", "value": 388}
+  ]
+}

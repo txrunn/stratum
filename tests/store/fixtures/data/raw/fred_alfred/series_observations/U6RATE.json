@@ -1,0 +1,11 @@
+{
+  "series_id": "U6RATE",
+  "observations": [
+    {"date": "2024-01-01", "realtime_start": "2024-02-02", "realtime_end": "2024-03-04", "value": "7.2"},
+    {"date": "2024-01-01", "realtime_start": "2024-03-05", "realtime_end": "9999-12-31", "value": "7.1"},
+    {"date": "2024-02-01", "realtime_start": "2024-03-08", "realtime_end": "2024-04-04", "value": "7.3"},
+    {"date": "2024-02-01", "realtime_start": "2024-04-05", "realtime_end": "9999-12-31", "value": "7.2"},
+    {"date": "2024-03-01", "realtime_start": "2024-04-05", "realtime_end": "9999-12-31", "value": "7.0"},
+    {"date": "2024-04-01", "realtime_start": "2024-05-03", "realtime_end": "9999-12-31", "value": "."}
+  ]
+}

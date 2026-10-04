@@ -1,6 +1,12 @@
 # All fetched and derived data. Position data must never be committed.
 data/
 
+# Test fixtures intentionally mirror the data/raw/ layout (so a loader that
+# passes tests accepts real agent-ingester output unchanged) and would
+# otherwise be silently eaten by the data/ rule above — un-ignore them.
+!tests/**/fixtures/data/
+!tests/**/fixtures/data/**
+
 # Runtime secrets — account numbers are supplied at runtime, not stored.
 .env
 *.local.yaml
