@@ -1,0 +1,26 @@
+{
+  "fetched_at": "2026-09-05T21:05:00Z",
+  "adjustment_type": "split",
+  "results": [
+    {
+      "symbol": "NVDA",
+      "bars": [
+        {"begins_at": "2026-09-02T00:00:00Z", "open_price": "170.10", "high_price": "172.40",
+         "low_price": "169.80", "close_price": "171.95", "volume": 182345678, "interpolated": false},
+        {"begins_at": "2026-09-03T00:00:00Z", "open_price": "171.90", "high_price": "174.00",
+         "low_price": "171.20", "close_price": "173.50", "volume": 165432100, "interpolated": false},
+        {"begins_at": "2026-09-04T00:00:00Z", "open_price": "173.40", "high_price": "173.60",
+         "low_price": "172.90", "close_price": "173.25", "volume": 98765432, "interpolated": true}
+      ]
+    },
+    {
+      "symbol": "AMD",
+      "bars": [
+        {"begins_at": "2026-09-02T00:00:00Z", "open_price": "151.20", "high_price": "153.00",
+         "low_price": "150.75", "close_price": "152.60", "volume": 45678901, "interpolated": false},
+        {"begins_at": "2026-09-03T00:00:00Z", "open_price": "152.55", "high_price": "154.10",
+         "low_price": "151.90", "close_price": "153.80", "volume": 41234567, "interpolated": false}
+      ]
+    }
+  ]
+}

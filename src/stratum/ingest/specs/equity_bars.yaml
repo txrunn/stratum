@@ -1,0 +1,31 @@
+# Daily OHLCV for the equity bench + benchmarks, via Robinhood's batch
+# historicals endpoint. Feeds market_model.py's estimation window and every
+# event-study CAR/SCAR calculation.
+#
+# get_equity_historicals takes up to 10 symbols per call (see UNIVERSE.md
+# "Fetch shape": 30 symbols / 10 per call = 3 calls for the full panel). The
+# fanout below mirrors that batching exactly so one raw file == one call.
+#
+# adjustment_type: split (the tool's own default, and the right one for
+# backtesting — raw prices would show false jumps at every stock split).
+# interval: day. start_time reaches back past the longest estimation window
+# (250 trading days) plus slack for recent_ipo names and holiday gaps.
+
+source: robinhood
+endpoint: get_equity_historicals
+params:
+  start_time: "2015-01-01T00:00:00Z"
+  interval: day
+  adjustment_type: split
+  bounds: regular
+
+fanout:
+  over:
+    - {batch_label: batch_1, symbols: [NVDA, AMD, INTC, AVGO, QCOM, ARM, MU, TSM, MRVL, AMAT]}
+    - {batch_label: batch_2, symbols: [MSFT, GOOGL, AMZN, META, ORCL, VRT, ETN, GEV, CEG, PWR]}
+    - {batch_label: batch_3, symbols: [KO, PG, JNJ, WM, JPM, XOM, SPY, QQQ, SMH, XLU]}
+  as: batch_label
+
+cache:
+  key: "{batch_label}"
+  ttl_days: 1       # re-fetch daily; last bar of a prior fetch may still be provisional intraday
